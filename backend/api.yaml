@@ -1,0 +1,228 @@
+openapi: 3.0.3
+info:
+  title: TOURNAMENT MANAGEMENT SYSTEM
+  contact:
+    email: xab.is@yandex.ru
+  version: 1.0.0
+tags:
+  - name: authentication
+    description: Login and register
+  - name: tournament
+    description: Tournament management
+  - name: invitation
+    description: Invitations to tournament
+paths:
+  /auth/register:
+    post:
+      tags:
+        - authentication
+      summary: Register new account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        200:
+          description: Successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /auth/login:
+    post:
+      tags:
+        - authentication
+      summary: Login to account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /tournament:
+    post:
+      tags:
+        - tournament
+      summary: Create new tournament
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentCreationRequestDto'
+      responses:
+        200:
+          description: Successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+  /invitation:
+    post:
+      tags:
+        - invitation
+      summary: Send invitation to tournament
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteRequest'
+      responses:
+        200:
+          description: User successfully invited
+  /{invitationId}/accept:
+    put:
+      tags:
+        - invitation
+      summary: Accept invitation
+      parameters:
+        - name: invitationId
+          in: path
+          required: true
+          description: id of invitation
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Invitation successfully accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 10
+        username:
+          type: string
+          example: 'ivanov'
+        firstname:
+          type: string
+          example: 'Ivan'
+        lastname:
+          type: string
+          example: 'Ivanov'
+        email:
+          type: string
+          example: 'ivan@example.com'
+    Group:
+      type: object
+    Stage:
+      type: object
+      properties:
+        stageId:
+          type: integer
+          example: 10
+        stageType:
+          type: string
+          example: 'SINGLE_ELIMINATION'
+          enum:
+            - SINGLE_ELIMINATION
+            - PLAY_OFFS
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        orderNumber:
+          type: integer
+          example: 1
+    Tournament:
+      type: object
+      properties:
+        tournamentId:
+          type: integer
+          example: 10
+        name:
+          type: string
+          example: 'Tennis'
+        description:
+          type: string
+          example: 'Tournament between colleagues'
+        startDate:
+          type: string
+          format: 'yyyy-MM-dd'
+          example: '2024-01-01'
+        creator:
+          $ref: '#/components/schemas/User'
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        tournamentStatus:
+          type: string
+          example: 'NOT_STARTED'
+          enum:
+            - NOT_STARTED
+            - STARTED
+            - FINISHED
+            - CANCELED
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stage'
+    TournamentCreationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Tennis'
+        description:
+          type: string
+          example: 'Tournament between colleagues'
+        startDate:
+          type: string
+          format: 'yyyy-MM-dd'
+          example: '2024-01-01'
+        type:
+          type: string
+          example: 'SINGLE_ELIMINATION'
+          enum:
+            - ROUND_ROBIN
+            - SINGLE_ELIMINATION
+            - PLAY_OFFS
+    InviteRequest:
+      type: object
+      properties:
+        tournamentId:
+          type: integer
+          example: 10
+        username:
+          type: string
+          example: 'ivanov'
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: 'ivanov'
+        firstname:
+          type: string
+          example: 'Ivan'
+        lastname:
+          type: string
+          example: 'Ivanov'
+        email:
+          type: string
+          example: 'ivan@example.com'
+        password:
+          type: string
+          example: '***'
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: 'ivanov'
+        password:
+          type: string
+          example: '***'
