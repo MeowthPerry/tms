@@ -118,6 +118,7 @@ components:
           type: string
           example: 'ivan@example.com'
     Group:
+      # TODO 14.08 дописать
       type: object
     Stage:
       type: object
