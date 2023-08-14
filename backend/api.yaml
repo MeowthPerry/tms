@@ -47,6 +47,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
   /tournament:
+    # TODO 14.08 описать метод получения данных турнира
     post:
       tags:
         - tournament
@@ -63,6 +64,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tournament'
+    # TODO 14.08 описать метод начала турнира
   /invitation:
     post:
       tags:
