@@ -18,6 +18,7 @@ import ru.github.meperry.tms.backend.security.service.RuntimeUserService;
 public class TournamentService {
 
   private final RuntimeUserService runtimeUserService;
+  private final StageService stageService;
 
   private final TournamentRepository tournamentRepository;
 
@@ -37,16 +38,7 @@ public class TournamentService {
 
   public Tournament start(Tournament tournament) {
     Stage firstStage = tournament.getStages().get(0);
-
-    switch (firstStage.getStageType()) {
-      case SINGLE_ELIMINATION:
-        break;
-      case ROUND_ROBIN:
-        break;
-      default:
-        throw new IllegalStateException(
-            "Unknown stage type: should be SINGLE_ELIMINATION or ROUND_ROBIN");
-    }
+    stageService.generateGroupsWithMatchesAndSave(firstStage, tournament.getParticipants());
 
     tournament.setTournamentStatus(TournamentStatus.STARTED);
 

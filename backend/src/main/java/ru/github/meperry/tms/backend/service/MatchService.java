@@ -17,8 +17,12 @@ public class MatchService {
 
   private final MatchRepository matchRepository;
 
-  public List<Match> createMatchesForSingleElimination(List<User> participants) {
-    // TODO 14.08 реализовать
+  public List<Match> generateRoundRobinMatches(List<User> participants) {
+    // TODO 16.08 implement
     throw new UnsupportedOperationException();
+  }
+
+  public List<Match> saveAll(List<Match> matches) {
+    return matchRepository.saveAll(matches);
   }
 }

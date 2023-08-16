@@ -1,5 +1,6 @@
 package ru.github.meperry.tms.backend.model;
 
+import java.util.Date;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -30,6 +31,9 @@ public class Match extends BaseEntity {
   @Column(nullable = false)
   @JsonIgnore
   private int round;
+
+  @Column(name = "match_date")
+  private Date matchDate;
 
   @ManyToOne
   @JoinColumn(name = "user_participant_one_id", nullable = false)

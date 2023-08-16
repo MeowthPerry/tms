@@ -1,6 +1,6 @@
 package ru.github.meperry.tms.backend.model;
 
-import java.util.Set;
+import java.util.List;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -33,7 +33,7 @@ public class Stage extends BaseEntity {
 
   @OneToMany(mappedBy = "stage")
   @JsonManagedReference
-  private Set<Group> groups;
+  private List<Group> groups;
 
   @Column(name = "order_number")
   private int orderNumber;
