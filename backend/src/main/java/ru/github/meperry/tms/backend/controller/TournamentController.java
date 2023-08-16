@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.github.meperry.tms.backend.model.RoundRobinStageMetadata;
 import ru.github.meperry.tms.backend.model.Stage;
 import ru.github.meperry.tms.backend.model.StageType;
 import ru.github.meperry.tms.backend.model.Tournament;
 import ru.github.meperry.tms.backend.request.CreatingTournamentType;
 import ru.github.meperry.tms.backend.request.TournamentCreationRequest;
+import ru.github.meperry.tms.backend.service.RoundRobinStageMetadataService;
 import ru.github.meperry.tms.backend.service.StageService;
 import ru.github.meperry.tms.backend.service.TournamentService;
 
@@ -26,6 +28,7 @@ public class TournamentController {
 
   private final TournamentService tournamentService;
   private final StageService stageService;
+  private final RoundRobinStageMetadataService roundRobinStageMetadataService;
 
   @GetMapping("/{tournamentId}")
   public ResponseEntity<Tournament> get(@PathVariable Long tournamentId) {
@@ -42,15 +45,25 @@ public class TournamentController {
     tournament.setDescription(request.getDescription());
     tournament.setStartDate(request.getStartDate());
 
-    Tournament saved = tournamentService.save(tournament);
+    Tournament savedTournament = tournamentService.save(tournament);
 
     List<Stage> stages = createStagesByType(request.getType()).stream().map(stage -> {
-      stage.setTournament(saved);
-      return stageService.save(stage);
-    }).collect(Collectors.toList());
-    saved.setStages(stages);
+      stage.setTournament(savedTournament);
+      Stage savedStage = stageService.save(stage);
 
-    return new ResponseEntity<>(saved, HttpStatus.CREATED);
+      if (StageType.ROUND_ROBIN.equals(savedStage.getStageType())) {
+        RoundRobinStageMetadata roundRobinStageMetadata = new RoundRobinStageMetadata();
+        roundRobinStageMetadata.setGroupCount(request.getGroupCount());
+        roundRobinStageMetadata.setWinnerCount(request.getWinnerCount());
+        roundRobinStageMetadata.setRoundRobinStage(savedStage);
+        roundRobinStageMetadataService.save(roundRobinStageMetadata);
+      }
+
+      return savedStage;
+    }).collect(Collectors.toList());
+    savedTournament.setStages(stages);
+
+    return new ResponseEntity<>(savedTournament, HttpStatus.CREATED);
   }
 
   /**

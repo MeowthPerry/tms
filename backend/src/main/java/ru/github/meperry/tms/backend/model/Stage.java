@@ -37,4 +37,8 @@ public class Stage extends BaseEntity {
 
   @Column(name = "order_number")
   private int orderNumber;
+
+  // if stageType == StageType.ROUND_ROBIN
+  @OneToOne(mappedBy = "roundRobinStage")
+  private RoundRobinStageMetadata roundRobinStageMetadata;
 }
