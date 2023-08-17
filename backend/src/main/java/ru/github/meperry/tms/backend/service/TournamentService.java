@@ -46,6 +46,6 @@ public class TournamentService {
 
     tournament.setTournamentStatus(TournamentStatus.STARTED);
 
-    return tournament;
+    return tournamentRepository.save(tournament);
   }
 }

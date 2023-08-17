@@ -30,6 +30,7 @@ public class Stage extends BaseEntity {
   @ManyToOne
   @JoinColumn(name = "tournament_id", nullable = false)
   @JsonBackReference
+  @EqualsAndHashCode.Exclude
   private Tournament tournament;
 
   @OneToMany(mappedBy = "stage")
@@ -37,7 +38,7 @@ public class Stage extends BaseEntity {
   private List<Group> groups;
 
   @Column(name = "order_number")
-  private int orderNumber;
+  private Integer orderNumber;
 
   // if stageType == StageType.ROUND_ROBIN
   @OneToOne(mappedBy = "roundRobinStage")

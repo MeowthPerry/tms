@@ -39,7 +39,7 @@ public class GroupService {
     int i = 0;
     for (User participant : participants) {
       groups.get(i++).getParticipants().add(participant);
-      if (i > groupCount) {
+      if (i >= groupCount) {
         i = 0;
       }
     }

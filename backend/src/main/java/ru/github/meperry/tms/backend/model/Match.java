@@ -26,15 +26,16 @@ public class Match extends BaseEntity {
   @ManyToOne
   @JoinColumn(name = "group_id", nullable = false)
   @JsonBackReference
+  @EqualsAndHashCode.Exclude
   private Group group;
 
   @Column(nullable = false)
   @JsonIgnore
-  private int round;
+  private Integer round;
 
   @Column(nullable = false, name = "order_number")
   @JsonIgnore
-  private int orderNumber;
+  private Integer orderNumber;
 
   @Column(name = "match_date")
   private Date matchDate;
@@ -44,14 +45,14 @@ public class Match extends BaseEntity {
   private User participantOne;
 
   @Column(name = "user_participant_one_score")
-  private int participantOneScore;
+  private Integer participantOneScore;
 
   @ManyToOne
   @JoinColumn(name = "user_participant_two_id")
   private User participantTwo;
 
   @Column(name = "user_participant_two_score")
-  private int participantTwoScore;
+  private Integer participantTwoScore;
 
   public User winner() {
     return participantTwo == null || participantOneScore > participantTwoScore

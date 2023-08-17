@@ -26,6 +26,7 @@ public class Group extends BaseEntity {
   @ManyToOne
   @JoinColumn(name = "stage_id", nullable = false)
   @JsonBackReference
+  @EqualsAndHashCode.Exclude
   private Stage stage;
 
   @OneToMany(mappedBy = "group")
