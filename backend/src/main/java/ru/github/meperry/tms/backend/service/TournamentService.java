@@ -1,5 +1,6 @@
 package ru.github.meperry.tms.backend.service;
 
+import java.util.Comparator;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,10 @@ public class TournamentService {
   }
 
   public Tournament start(Tournament tournament) {
-    Stage firstStage = tournament.getStages().get(0);
+    Stage firstStage = tournament.getStages()
+        .stream()
+        .min(Comparator.comparing(Stage::getOrderNumber))
+        .get();
     stageService.generateGroupsWithMatchesAndSave(firstStage, tournament.getParticipants());
 
     tournament.setTournamentStatus(TournamentStatus.STARTED);
