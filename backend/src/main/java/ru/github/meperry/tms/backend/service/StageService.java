@@ -31,14 +31,20 @@ public class StageService {
     List<Group> groups;
     switch (stage.getStageType()) {
       case SINGLE_ELIMINATION:
-        Group oneGroup = new Group();
-        oneGroup.setStage(stage);
-        oneGroup.setParticipants(participants);
-        oneGroup = groupService.save(oneGroup);
+        Group singleGroup = new Group();
+        singleGroup.setStage(stage);
+        singleGroup.setParticipants(participants);
+        Group savedGroup = groupService.save(singleGroup);
 
-        //
+        List<Match> seMatches = matchService.generateSingleEliminationMatches(savedGroup.getParticipants());
 
-        groups = Collections.singletonList(oneGroup);
+        // сохраняем матчи
+        seMatches.forEach(match -> match.setGroup(savedGroup));
+        seMatches = matchService.saveAll(seMatches);
+
+        savedGroup.setMatches(seMatches);
+
+        groups = Collections.singletonList(savedGroup);
         break;
       case ROUND_ROBIN:
         groups = groupService.distributeByGroups(participants,
@@ -46,27 +52,22 @@ public class StageService {
         );
 
         // сохраняем группы
-        groups.forEach(group -> {
-          group.setStage(stage);
-        });
+        groups.forEach(group -> group.setStage(stage));
         groups = groupService.saveAll(groups);
 
         // генерируем матчи для каждой группы
         groups.forEach(group -> {
-          List<Match> matches = matchService.generateRoundRobinMatches(group.getParticipants());
+          List<Match> rrMatches = matchService.generateRoundRobinMatches(group.getParticipants());
 
           // сохраняем матчи
-          matches.forEach(match -> {
-            match.setGroup(group);
-          });
-          matches = matchService.saveAll(matches);
+          rrMatches.forEach(match -> match.setGroup(group));
+          rrMatches = matchService.saveAll(rrMatches);
 
-          group.setMatches(matches);
+          group.setMatches(rrMatches);
         });
         break;
       default:
-        throw new IllegalStateException(
-            "Unknown stage type: should be SINGLE_ELIMINATION or ROUND_ROBIN");
+        throw new IllegalStateException("Unknown stage type: should be SINGLE_ELIMINATION or ROUND_ROBIN");
     }
 
     stage.setGroups(groups);

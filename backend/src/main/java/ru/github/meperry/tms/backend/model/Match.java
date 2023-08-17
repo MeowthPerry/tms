@@ -32,6 +32,10 @@ public class Match extends BaseEntity {
   @JsonIgnore
   private int round;
 
+  @Column(nullable = false)
+  @JsonIgnore
+  private int order;
+
   @Column(name = "match_date")
   private Date matchDate;
 
