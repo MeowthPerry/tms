@@ -40,14 +40,14 @@ public class TournamentController {
 
   @PostMapping
   public ResponseEntity<Tournament> create(@RequestBody TournamentCreationRequest request) {
+    validateCreationRequest(request);
+
     Tournament tournament = new Tournament();
     tournament.setName(request.getName());
     tournament.setDescription(request.getDescription());
     tournament.setStartDate(request.getStartDate());
 
     Tournament savedTournament = tournamentService.save(tournament);
-
-    validateCreationRequest(request);
 
     List<Stage> stages = createStagesByType(request.getType()).stream().map(stage -> {
       stage.setTournament(savedTournament);
@@ -70,12 +70,12 @@ public class TournamentController {
 
   private void validateCreationRequest(TournamentCreationRequest request) {
     if (CreatingTournamentType.SINGLE_ELIMINATION.equals(request.getType())) {
-      if (request.getGroupCount() == null || request.getPassingCount() == null) {
+      if (request.getGroupCount() != null || request.getPassingCount() != null) {
         throw new IllegalArgumentException();
       }
     }
     else {
-      if (request.getGroupCount() != null || request.getPassingCount() != null) {
+      if (request.getGroupCount() == null || request.getPassingCount() == null) {
         throw new IllegalArgumentException();
       }
     }
