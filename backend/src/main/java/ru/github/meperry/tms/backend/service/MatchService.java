@@ -62,6 +62,12 @@ public class MatchService {
     }
 
     // проставляем порядковые номера, не могли в предыдущем цикле из-за не существующего участника
+    putDownSerialNumbers(matches);
+
+    return matches;
+  }
+
+  private static void putDownSerialNumbers(List<Match> matches) {
     int currentOrder = 0;
     int currentRound = 0;
     for (Match match : matches) {
@@ -71,8 +77,6 @@ public class MatchService {
       }
       match.setOrderNumber(currentOrder++);
     }
-
-    return matches;
   }
 
   public List<Match> generateSingleEliminationMatches(List<User> participants) {
