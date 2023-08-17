@@ -5,6 +5,5 @@ package ru.github.meperry.tms.backend.request;
  */
 public enum CreatingTournamentType {
   SINGLE_ELIMINATION,
-  ROUND_ROBIN,
-  PLAY_OFFS
+  PLAY_OFFS // ROUND_ROBIN + SINGLE_ELIMINATION
 }

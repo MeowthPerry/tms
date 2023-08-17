@@ -47,6 +47,8 @@ public class TournamentController {
 
     Tournament savedTournament = tournamentService.save(tournament);
 
+    validateCreationRequest(request);
+
     List<Stage> stages = createStagesByType(request.getType()).stream().map(stage -> {
       stage.setTournament(savedTournament);
       Stage savedStage = stageService.save(stage);
@@ -54,7 +56,7 @@ public class TournamentController {
       if (StageType.ROUND_ROBIN.equals(savedStage.getStageType())) {
         RoundRobinStageMetadata roundRobinStageMetadata = new RoundRobinStageMetadata();
         roundRobinStageMetadata.setGroupCount(request.getGroupCount());
-        roundRobinStageMetadata.setWinnerCount(request.getWinnerCount());
+        roundRobinStageMetadata.setPassingCount(request.getPassingCount());
         roundRobinStageMetadata.setRoundRobinStage(savedStage);
         roundRobinStageMetadataService.save(roundRobinStageMetadata);
       }
@@ -64,6 +66,19 @@ public class TournamentController {
     savedTournament.setStages(stages);
 
     return new ResponseEntity<>(savedTournament, HttpStatus.CREATED);
+  }
+
+  private void validateCreationRequest(TournamentCreationRequest request) {
+    if (CreatingTournamentType.SINGLE_ELIMINATION.equals(request.getType())) {
+      if (request.getGroupCount() == null || request.getPassingCount() == null) {
+        throw new IllegalArgumentException();
+      }
+    }
+    else {
+      if (request.getGroupCount() != null || request.getPassingCount() != null) {
+        throw new IllegalArgumentException();
+      }
+    }
   }
 
   /**
@@ -79,9 +94,6 @@ public class TournamentController {
   private List<Stage> createStagesByType(CreatingTournamentType type) {
     List<Stage> stages = new ArrayList<>();
     switch (type) {
-      case ROUND_ROBIN:
-        stages.add(createRoundRobinStage());
-        break;
       case SINGLE_ELIMINATION:
         stages.add(createSingleEliminationStage());
         break;

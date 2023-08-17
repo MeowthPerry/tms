@@ -26,6 +26,6 @@ public class RoundRobinStageMetadata extends BaseEntity {
   @Column(nullable = false, name = "group_count")
   private int groupCount;
 
-  @Column(nullable = false, name = "winner_count")
-  private int winnerCount;
+  @Column(nullable = false, name = "passing_count")
+  private int passingCount;
 }
