@@ -31,6 +31,7 @@ public class MatchService {
 
     int numParticipants = participants.size();
 
+    // TODO 17.08 неправильно считается если количество участников нечетное
     for (int round = 0; round < numParticipants - 1; round++) {
       for (int i = 0; i < numParticipants / 2; i++) {
         User participantOne = participants.get(i);
