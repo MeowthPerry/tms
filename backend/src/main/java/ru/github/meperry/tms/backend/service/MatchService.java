@@ -22,12 +22,21 @@ public class MatchService {
 
   private final MatchRepository matchRepository;
 
+  private static final User DUMMY_USER = new User();
+
   public List<Match> generateRoundRobinMatches(List<User> participants) {
-    if (participants == null || participants.size() < 2) {
+    // не манипулируем изначальным списком
+    participants = new ArrayList<>(participants);
+
+    if (participants.size() < 2) {
       throw new IllegalArgumentException();
     }
 
     List<Match> matches = new ArrayList<>();
+
+    if (participants.size() % 2 != 0) {
+      participants.add(DUMMY_USER);
+    }
 
     int numParticipants = participants.size();
 
@@ -37,9 +46,12 @@ public class MatchService {
         User participantOne = participants.get(i);
         User participantTwo = participants.get(numParticipants - 1 - i);
 
+        if (participantOne.equals(DUMMY_USER) || participantTwo.equals(DUMMY_USER)) {
+          continue;
+        }
+
         Match match = new Match();
         match.setRound(round);
-        match.setOrderNumber(i);
         match.setParticipantOne(participantOne);
         match.setParticipantTwo(participantTwo);
         matches.add(match);
@@ -47,6 +59,17 @@ public class MatchService {
 
       // поворачиваем
       participants.add(1, participants.remove(numParticipants - 1));
+    }
+
+    // проставляем порядковые номера, не могли в предыдущем цикле из-за не существующего участника
+    int currentOrder = 0;
+    int currentRound = 0;
+    for (Match match : matches) {
+      if (match.getRound() != currentRound) {
+        currentOrder = 0;
+        currentRound = match.getRound();
+      }
+      match.setOrderNumber(currentOrder++);
     }
 
     return matches;
