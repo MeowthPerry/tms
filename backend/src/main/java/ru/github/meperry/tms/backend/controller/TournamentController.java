@@ -58,7 +58,8 @@ public class TournamentController {
         roundRobinStageMetadata.setGroupCount(request.getGroupCount());
         roundRobinStageMetadata.setPassingCount(request.getPassingCount());
         roundRobinStageMetadata.setRoundRobinStage(savedStage);
-        roundRobinStageMetadataService.save(roundRobinStageMetadata);
+        roundRobinStageMetadata = roundRobinStageMetadataService.save(roundRobinStageMetadata);
+        savedStage.setRoundRobinStageMetadata(roundRobinStageMetadata);
       }
 
       return savedStage;
