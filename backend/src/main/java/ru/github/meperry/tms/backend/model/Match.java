@@ -32,9 +32,9 @@ public class Match extends BaseEntity {
   @JsonIgnore
   private int round;
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "order_number")
   @JsonIgnore
-  private int order;
+  private int orderNumber;
 
   @Column(name = "match_date")
   private Date matchDate;

@@ -38,7 +38,7 @@ public class MatchService {
 
         Match match = new Match();
         match.setRound(round);
-        match.setOrder(i);
+        match.setOrderNumber(i);
         match.setParticipantOne(participantOne);
         match.setParticipantTwo(participantTwo);
         matches.add(match);
@@ -76,7 +76,7 @@ public class MatchService {
     for (int i = 0; i < matchCount; i++) {
       Match match = matches.get(i);
       match.setRound(round);
-      match.setOrder(i);
+      match.setOrderNumber(i);
       match.setParticipantTwo(participantIterator.next());
     }
 
