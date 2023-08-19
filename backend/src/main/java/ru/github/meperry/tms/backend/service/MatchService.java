@@ -105,7 +105,7 @@ public class MatchService {
       Match match = matches.get(i);
       match.setRound(round);
       match.setOrderNumber(i);
-      match.setParticipantTwo(participantIterator.next());
+      match.setParticipantOne(participantIterator.next());
     }
 
     // задаем вторых игроков

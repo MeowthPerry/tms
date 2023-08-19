@@ -87,6 +87,8 @@ public class TournamentController {
    */
   @PutMapping("/{tournamentId}/start")
   public ResponseEntity<Tournament> start(@PathVariable Long tournamentId) {
+    // TODO 19.08 Сделать так, чтобы только создатель мог начать турнир
+
     Tournament tournament = tournamentService.findById(tournamentId)
         .orElseThrow(RuntimeException::new);
     return ResponseEntity.ok(tournamentService.start(tournament));

@@ -1,5 +1,6 @@
 package ru.github.meperry.tms.backend.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +34,9 @@ public class StageService {
       case SINGLE_ELIMINATION:
         Group singleGroup = new Group();
         singleGroup.setStage(stage);
-        singleGroup.setParticipants(participants);
+        // если не создать новый лист, то будет ошибка
+        // Found shared references to a collection org.hibernate.HibernateException
+        singleGroup.setParticipants(new ArrayList<>(participants));
         Group savedGroup = groupService.save(singleGroup);
 
         List<Match> seMatches = matchService.generateSingleEliminationMatches(savedGroup.getParticipants());
