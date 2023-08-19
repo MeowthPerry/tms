@@ -28,9 +28,4 @@ public abstract class BaseEntity {
   @UpdateTimestamp
   @JsonIgnore
   private Date updated;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "status")
-  @JsonIgnore
-  private Status status;
 }

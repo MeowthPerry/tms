@@ -5,6 +5,7 @@ import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.github.meperry.tms.backend.model.BaseEntity;
+import ru.github.meperry.tms.backend.model.Status;
 
 @Entity
 @Table(name = "users")
@@ -40,4 +41,9 @@ public class User extends BaseEntity {
   @Enumerated(EnumType.STRING)
   @JsonIgnore
   private Role role;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status")
+  @JsonIgnore
+  private Status status;
 }

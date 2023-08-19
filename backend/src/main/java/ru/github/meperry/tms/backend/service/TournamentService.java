@@ -27,7 +27,7 @@ public class TournamentService {
     if (tournament.getCreator() == null) {
       tournament.setCreator(runtimeUserService.currentUser().user());
     }
-    if (tournament.getStatus() == null) {
+    if (tournament.getTournamentStatus() == null) {
       tournament.setTournamentStatus(TournamentStatus.NOT_STARTED);
     }
     return tournamentRepository.save(tournament);
