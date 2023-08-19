@@ -8,9 +8,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @SpringBootApplication
 @EntityListeners(AuditingEntityListener.class)
-public class Application {
+public class TmsBackendApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(Application.class, args);
+    SpringApplication.run(TmsBackendApplication.class, args);
   }
 }
