@@ -1,14 +1,14 @@
 package ru.github.meperry.tms.telegram_bot.command_handler;
 
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import ru.github.meperry.tms.telegram_bot.domain.MessageExchange;
 
 /**
  * @author Islam Khabibullin
  */
 public interface CommandHandler {
 
-  boolean supports(Message message);
+  boolean supports(Message message, String textWithoutBotName);
 
-  SendMessage handle(Message message);
+  MessageExchange handle(Message message);
 }

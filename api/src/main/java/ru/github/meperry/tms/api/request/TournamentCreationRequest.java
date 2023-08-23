@@ -1,4 +1,4 @@
-package ru.github.meperry.tms.backend.request;
+package ru.github.meperry.tms.api.request;
 
 import java.sql.Date;
 
