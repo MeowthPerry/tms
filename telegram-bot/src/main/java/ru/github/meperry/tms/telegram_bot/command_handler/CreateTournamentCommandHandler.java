@@ -23,12 +23,12 @@ public class CreateTournamentCommandHandler extends StatefulCommandHandler {
   }
 
   @Override
-  public MessageExchange handle(Message message) {
+  public MessageExchange handle(Message message, String textWithoutBotName) {
     stateRepository.save(new State(message.getChatId(), new TournamentCreationRequest()));
     return new MessageExchange(message.getChatId(), "Отлично! Давайте обсудим детали вашего турнира. Какое будет название?", this::handleName);
   }
 
-  private MessageExchange handleName(Message message) {
+  private MessageExchange handleName(Message message, String textWithoutBotName) {
     State state = stateRepository.findById(message.getChatId()).get();
     String name = message.getText();
     ((TournamentCreationRequest) state.getData()).setName(name);

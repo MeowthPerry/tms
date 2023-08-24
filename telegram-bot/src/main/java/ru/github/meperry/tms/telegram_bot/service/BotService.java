@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class BotService extends TelegramLongPollingBot {
 
   private final List<CommandHandler> commandHandlers;
 
-  private final Map<Long, Function<Message, MessageExchange>> replyHandlers = new HashMap<>();
+  private final Map<Long, BiFunction<Message, String, MessageExchange>> replyHandlers = new HashMap<>();
 
   public BotService(List<CommandHandler> commandHandlers) {
     super(System.getenv(BOT_TOKEN_VAR_NAME));
@@ -46,10 +46,10 @@ public class BotService extends TelegramLongPollingBot {
         // если это команда, то обрабатываем команду
         if (isCommandMessage(message)) {
           Optional<CommandHandler> commandHandlerOptional = commandHandlers.stream()
-              .filter(commandHandler -> commandHandler.supports(message, message.getText().substring(("@" + botUsername + " ").length())))
+              .filter(commandHandler -> commandHandler.supports(message, getTextWithoutBotName(message.getText())))
               .findFirst();
           if (commandHandlerOptional.isPresent()) {
-            MessageExchange messageExchange = commandHandlerOptional.get().handle(message);
+            MessageExchange messageExchange = commandHandlerOptional.get().handle(message, getTextWithoutBotName(message.getText()));
             sendMessage(messageExchange);
           }
           else {
@@ -58,8 +58,8 @@ public class BotService extends TelegramLongPollingBot {
         }
         // если нет, ищем среди обработчиков ответов обработчик для данного chatId
         else if (replyHandlers.containsKey(chatId)) {
-          Function<Message, MessageExchange> replyHandler = replyHandlers.get(chatId);
-          sendMessage(replyHandler.apply(message));
+          BiFunction<Message, String, MessageExchange> replyHandler = replyHandlers.get(chatId);
+          sendMessage(replyHandler.apply(message, getTextWithoutBotName(message.getText())));
         }
         // если нет обработчика пишем, что неправильное сообщение
         else {
@@ -69,10 +69,17 @@ public class BotService extends TelegramLongPollingBot {
     }
   }
 
+  private String getTextWithoutBotName(String text) {
+    if (text.startsWith("@" + botUsername + " ")) {
+      return text.substring(("@" + botUsername + " ").length());
+    }
+    return text;
+  }
+
   private boolean isTextMessage(Message message) {
     return message.hasText()
            && (!message.getChat().isGroupChat()
-               || message.getText().startsWith("@" + botUsername));
+               || message.getText().startsWith("@" + botUsername + " "));
   }
 
   private boolean isCommandMessage(Message message) {
@@ -99,7 +106,7 @@ public class BotService extends TelegramLongPollingBot {
   }
 
   private void sendMessage(long chatId, String message,
-      Function<Message, MessageExchange> replyHandler) {
+      BiFunction<Message, String, MessageExchange> replyHandler) {
     replyHandlers.put(chatId, replyHandler);
     sendMessage(chatId, message);
   }

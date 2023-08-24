@@ -1,6 +1,6 @@
 package ru.github.meperry.tms.telegram_bot.domain;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class MessageExchange {
 
   private Long chatId;
   private String message;
-  private Function<Message, MessageExchange> replyHandler;
+  private BiFunction<Message, String, MessageExchange> replyHandler;
 
   public MessageExchange(Long chatId, String message) {
     this.chatId = chatId;

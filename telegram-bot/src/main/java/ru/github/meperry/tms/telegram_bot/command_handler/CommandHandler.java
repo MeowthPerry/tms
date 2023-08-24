@@ -10,5 +10,5 @@ public interface CommandHandler {
 
   boolean supports(Message message, String textWithoutBotName);
 
-  MessageExchange handle(Message message);
+  MessageExchange handle(Message message, String textWithoutBotName);
 }
