@@ -43,6 +43,7 @@ public class BotService extends TelegramLongPollingBot {
 
       if (isTextMessage(message)) {
         Long chatId = update.getMessage().getChatId();
+        // TODO 27.08 Заменить на switch-case: команда из группового чата, команда из приватного чата, обычное текстовое сообщение
         // если это команда, то обрабатываем команду
         if (isCommandMessage(message)) {
           Optional<CommandHandler> commandHandlerOptional = commandHandlers.stream()

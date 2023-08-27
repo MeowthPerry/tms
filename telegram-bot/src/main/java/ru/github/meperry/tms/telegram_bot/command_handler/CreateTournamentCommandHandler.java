@@ -2,7 +2,7 @@ package ru.github.meperry.tms.telegram_bot.command_handler;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import ru.github.meperry.tms.api.request.TournamentCreationRequest;
+import ru.github.meperry.tms.api.dto.TournamentCreationRequest;
 import ru.github.meperry.tms.telegram_bot.command_handler.state.State;
 import ru.github.meperry.tms.telegram_bot.command_handler.state.StateRepository;
 import ru.github.meperry.tms.telegram_bot.domain.MessageExchange;
@@ -19,7 +19,7 @@ public class CreateTournamentCommandHandler extends StatefulCommandHandler {
 
   @Override
   public boolean supports(Message message, String textWithoutBotName) {
-    return textWithoutBotName.startsWith("/create_tournament") ;
+    return textWithoutBotName.startsWith("/create_tournament");
   }
 
   @Override

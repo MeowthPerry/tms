@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import ru.github.meperry.tms.api.request.InviteRequest;
+import ru.github.meperry.tms.api.dto.InviteRequest;
 import ru.github.meperry.tms.backend.model.Invitation;
 import ru.github.meperry.tms.backend.model.Tournament;
 import ru.github.meperry.tms.backend.security.model.User;
