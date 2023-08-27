@@ -12,6 +12,7 @@ tags:
   - name: invitation
     description: Invitations to tournament
 paths:
+#  TODO 27.08 написать про token_location
   /auth/register:
     post:
       tags:

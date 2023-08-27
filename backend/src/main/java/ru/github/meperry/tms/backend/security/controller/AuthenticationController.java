@@ -10,10 +10,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.github.meperry.tms.api.security.dto.TokenLocation;
+import ru.github.meperry.tms.api.security.dto.UserToken;
 import ru.github.meperry.tms.backend.security.jwt.JwtTokenProvider;
 import ru.github.meperry.tms.backend.security.model.User;
 import ru.github.meperry.tms.api.security.dto.LoginRequest;
@@ -39,8 +38,9 @@ public class AuthenticationController {
   }
 
   @PostMapping("/login") // TODO: 24.07.2023 реализовать возможность указать место, куда будет записан токен
-  public ResponseEntity<User> login(@RequestBody LoginRequest requestDto,
-      HttpServletResponse response) {
+  public ResponseEntity login(@RequestBody LoginRequest requestDto,
+      HttpServletResponse response,
+      @RequestParam(name = "token_location", required = false) TokenLocation tokenLocation) {
     try {
       String username = requestDto.getUsername();
 
@@ -53,9 +53,20 @@ public class AuthenticationController {
               "User with username: " + username + " not found"));
       String token = jwtTokenProvider.createToken(username);
 
-      addTokenToCookie(token, response);
-
-      return ResponseEntity.ok(user);
+      if (tokenLocation != null) {
+        switch (tokenLocation) {
+          case COOKIE:
+            addTokenToCookie(token, response);
+            return ResponseEntity.ok(user);
+          case BODY:
+            throw new UnsupportedOperationException();
+          default:
+            throw new RuntimeException();
+        }
+      }
+      else {
+        throw new UnsupportedOperationException();
+      }
     }
     catch (AuthenticationException e) {
       throw new BadCredentialsException("Invalid username or password");
