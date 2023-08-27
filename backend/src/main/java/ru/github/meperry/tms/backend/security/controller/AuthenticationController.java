@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.github.meperry.tms.backend.security.jwt.JwtTokenProvider;
 import ru.github.meperry.tms.backend.security.model.User;
-import ru.github.meperry.tms.backend.security.request.LoginRequest;
-import ru.github.meperry.tms.backend.security.request.RegisterRequest;
+import ru.github.meperry.tms.api.security.request.LoginRequest;
+import ru.github.meperry.tms.api.security.request.RegisterRequest;
 import ru.github.meperry.tms.backend.security.service.UserService;
 
 @RestController

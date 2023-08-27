@@ -1,4 +1,4 @@
-package ru.github.meperry.tms.backend.security.request;
+package ru.github.meperry.tms.api.security.request;
 
 import lombok.Data;
 
