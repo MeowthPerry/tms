@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.github.meperry.tms.telegram_bot.command_handler.AsyncCommandHandler;
 import ru.github.meperry.tms.telegram_bot.command_handler.CommandHandler;
 import ru.github.meperry.tms.telegram_bot.domain.MessageExchange;
 
@@ -28,39 +29,62 @@ public class BotService extends TelegramLongPollingBot {
   private static final String BOT_TOKEN_VAR_NAME = "bot.token";
 
   private final List<CommandHandler> commandHandlers;
+  private final List<AsyncCommandHandler> asyncCommandHandlers;
 
   private final Map<Long, BiFunction<Message, String, MessageExchange>> replyHandlers = new HashMap<>();
 
-  public BotService(List<CommandHandler> commandHandlers) {
+  public BotService(List<CommandHandler> commandHandlers,
+      List<AsyncCommandHandler> asyncCommandHandlers) {
     super(System.getenv(BOT_TOKEN_VAR_NAME));
     this.commandHandlers = commandHandlers;
+    this.asyncCommandHandlers = asyncCommandHandlers;
   }
 
+  // TODO 28.08 refactor dis shit
   @Override
   public void onUpdateReceived(Update update) {
     if (update.hasMessage()) {
       Message message = update.getMessage();
 
       if (isTextMessage(message)) {
+
         Long chatId = update.getMessage().getChatId();
+        String textWithoutBotName = getTextWithoutBotName(message.getText());
+
         // TODO 27.08 заменить на switch-case: команда из группового чата, команда из приватного чата, обычное текстовое сообщение
         // если это команда, то обрабатываем команду
         if (isCommandMessage(message)) {
           Optional<CommandHandler> commandHandlerOptional = commandHandlers.stream()
-              .filter(commandHandler -> commandHandler.supports(message, getTextWithoutBotName(message.getText())))
+              .filter(commandHandler -> commandHandler.supports(message, textWithoutBotName))
               .findFirst();
           if (commandHandlerOptional.isPresent()) {
-            MessageExchange messageExchange = commandHandlerOptional.get().handle(message, getTextWithoutBotName(message.getText()));
+            MessageExchange messageExchange = commandHandlerOptional.get().handle(message,
+                textWithoutBotName
+            );
             sendMessage(messageExchange);
           }
           else {
-            sendMessage(chatId, "Не поддерживаемая команда. Отправьте `/help` для помощи.");
+
+            Optional<AsyncCommandHandler> asyncCommandHandlerOptional = asyncCommandHandlers.stream()
+                .filter(commandHandler -> commandHandler.supports(message,
+                    textWithoutBotName
+                ))
+                .findFirst();
+
+            if (asyncCommandHandlerOptional.isPresent()) {
+              asyncCommandHandlerOptional.get()
+                  .handle(message, textWithoutBotName)
+                  .subscribe(this::sendMessage);
+            }
+            else {
+              sendMessage(chatId, "Не поддерживаемая команда. Отправьте `/help` для помощи.");
+            }
           }
         }
         // если нет, ищем среди обработчиков ответов обработчик для данного chatId
         else if (replyHandlers.containsKey(chatId)) {
           BiFunction<Message, String, MessageExchange> replyHandler = replyHandlers.get(chatId);
-          sendMessage(replyHandler.apply(message, getTextWithoutBotName(message.getText())));
+          sendMessage(replyHandler.apply(message, textWithoutBotName));
         }
         // если нет обработчика пишем, что неправильное сообщение
         else {

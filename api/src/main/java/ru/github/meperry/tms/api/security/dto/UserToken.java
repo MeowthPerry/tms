@@ -1,13 +1,16 @@
 package ru.github.meperry.tms.api.security.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author Islam Khabibullin
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserToken {
-
-  private final UserDto user;
-  private final String accessToken;
+  private UserDto user;
+  private String accessToken;
 }
