@@ -3,7 +3,8 @@ package ru.github.meperry.tms.backend.security.controller;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,36 +12,28 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import ru.github.meperry.tms.api.security.dto.TokenLocation;
+import ru.github.meperry.tms.api.security.dto.LoginRequest;
+import ru.github.meperry.tms.api.security.dto.RegisterRequest;
+import ru.github.meperry.tms.api.security.dto.UserDto;
 import ru.github.meperry.tms.api.security.dto.UserToken;
 import ru.github.meperry.tms.backend.security.jwt.JwtTokenProvider;
 import ru.github.meperry.tms.backend.security.model.User;
-import ru.github.meperry.tms.api.security.dto.LoginRequest;
-import ru.github.meperry.tms.api.security.dto.RegisterRequest;
 import ru.github.meperry.tms.backend.security.service.UserService;
 
 @RestController
 @RequestMapping(value = "/auth")
+@RequiredArgsConstructor
 public class AuthenticationController {
 
   private final AuthenticationManager authenticationManager;
-
   private final JwtTokenProvider jwtTokenProvider;
-
   private final UserService userService;
+  private final ModelMapper modelMapper;
 
-  @Autowired
-  public AuthenticationController(AuthenticationManager authenticationManager,
-      JwtTokenProvider jwtTokenProvider, UserService userService) {
-    this.authenticationManager = authenticationManager;
-    this.jwtTokenProvider = jwtTokenProvider;
-    this.userService = userService;
-  }
-
-  @PostMapping("/login") // TODO: 24.07.2023 реализовать возможность указать место, куда будет записан токен
-  public ResponseEntity login(@RequestBody LoginRequest requestDto,
+  @PostMapping("/login")
+  public ResponseEntity<UserToken> login(@RequestBody LoginRequest requestDto,
       HttpServletResponse response,
-      @RequestParam(name = "token_location", required = false) TokenLocation tokenLocation) {
+      @RequestParam(name = "token_to_cookie", required = false, defaultValue = "false") Boolean tokenToCookie) {
     try {
       String username = requestDto.getUsername();
 
@@ -53,20 +46,11 @@ public class AuthenticationController {
               "User with username: " + username + " not found"));
       String token = jwtTokenProvider.createToken(username);
 
-      if (tokenLocation != null) {
-        switch (tokenLocation) {
-          case COOKIE:
-            addTokenToCookie(token, response);
-            return ResponseEntity.ok(user);
-          case BODY:
-            throw new UnsupportedOperationException();
-          default:
-            throw new RuntimeException();
-        }
+      if (tokenToCookie) {
+        addTokenToCookie(token, response);
       }
-      else {
-        throw new UnsupportedOperationException();
-      }
+
+      return ResponseEntity.ok(new UserToken(modelMapper.map(user, UserDto.class), token));
     }
     catch (AuthenticationException e) {
       throw new BadCredentialsException("Invalid username or password");
@@ -74,8 +58,9 @@ public class AuthenticationController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<User> register(@RequestBody RegisterRequest requestDto,
-      HttpServletResponse response) {
+  public ResponseEntity<UserToken> register(@RequestBody RegisterRequest requestDto,
+      HttpServletResponse response,
+      @RequestParam(name = "token_to_cookie", required = false, defaultValue = "false") Boolean tokenToCookie) {
     String username = requestDto.getUsername();
 
     // TODO: 25.06.2023 add check for unique fields
@@ -91,9 +76,12 @@ public class AuthenticationController {
     userService.register(user);
 
     String token = jwtTokenProvider.createToken(username);
-    addTokenToCookie(token, response);
 
-    return ResponseEntity.ok(user);
+    if (tokenToCookie) {
+      addTokenToCookie(token, response);
+    }
+
+    return ResponseEntity.ok(new UserToken(modelMapper.map(user, UserDto.class), token));
   }
 
   private void addTokenToCookie(String token, HttpServletResponse response) {

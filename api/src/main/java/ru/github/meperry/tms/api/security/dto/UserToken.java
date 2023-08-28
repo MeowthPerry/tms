@@ -8,6 +8,6 @@ import lombok.Data;
 @Data
 public class UserToken {
 
-  private final User user;
+  private final UserDto user;
   private final String accessToken;
 }
