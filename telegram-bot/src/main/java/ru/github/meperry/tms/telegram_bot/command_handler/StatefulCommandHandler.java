@@ -19,4 +19,8 @@ public abstract class StatefulCommandHandler extends CommandHandler {
   protected State getState(Long chatId) {
     return stateRepository.findById(chatId).get();
   }
+
+  protected void clearState(Long chatId) {
+    stateRepository.deleteById(chatId);
+  }
 }

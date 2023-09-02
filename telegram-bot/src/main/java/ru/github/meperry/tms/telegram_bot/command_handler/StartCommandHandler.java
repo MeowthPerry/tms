@@ -43,7 +43,9 @@ public class StartCommandHandler extends CommandHandler {
     authenticationApi.register(registerRequest)
         .subscribe(
             userToken -> {
-              MessageExchange messageExchange = new MessageExchange(messageForBot.getChatId(), userToken.toString());
+              MessageExchange messageExchange = new MessageExchange(messageForBot.getChatId(),
+                  "Пользователь зарегистрирован, ник - " + userToken.getUser().getUsername()
+              );
               botService.sendMessage(messageExchange);
             });
   }

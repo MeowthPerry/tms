@@ -9,8 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 /**
  * @author Islam Khabibullin
  */
-@Configuration
-@ComponentScan({"ru.github.meperry.tms.api.security.api"})
+@Configuration                     // TODO 02.02 исправить .api.api
+@ComponentScan({"ru.github.meperry.tms.api.api", "ru.github.meperry.tms.api.security.api"})
 public class ApiConfig {
 
   @Bean

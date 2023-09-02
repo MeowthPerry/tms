@@ -2,7 +2,7 @@ package ru.github.meperry.tms.telegram_bot.service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -31,7 +31,7 @@ public class BotService extends TelegramLongPollingBot {
 
   private final PublishSubject<MessageForBot> messageForBotSubject = PublishSubject.create();
 
-  private final Map<Long, BiFunction<Message, String, MessageExchange>> replyHandlers = new HashMap<>();
+  private final Map<Long, BiConsumer<Message, String>> replyHandlers = new HashMap<>();
 
   public BotService() {
     super(System.getenv(BOT_TOKEN_VAR_NAME));
@@ -93,7 +93,7 @@ public class BotService extends TelegramLongPollingBot {
   }
 
   public void sendMessage(long chatId, String message,
-      BiFunction<Message, String, MessageExchange> replyHandler) {
+      BiConsumer<Message, String> replyHandler) {
     replyHandlers.put(chatId, replyHandler);
     sendMessage(chatId, message);
   }
@@ -120,7 +120,7 @@ public class BotService extends TelegramLongPollingBot {
     Message message = messageForBot.getMessage();
     Long chatId = message.getChatId();
 
-    BiFunction<Message, String, MessageExchange> replyHandler = replyHandlers.remove(chatId);
-    sendMessage(replyHandler.apply(message, messageForBot.getTextWithoutBotName()));
+    BiConsumer<Message, String> replyHandler = replyHandlers.remove(chatId);
+    replyHandler.accept(message, messageForBot.getTextWithoutBotName());
   }
 }

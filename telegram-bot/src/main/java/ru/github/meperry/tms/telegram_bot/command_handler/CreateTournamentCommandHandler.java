@@ -2,8 +2,10 @@ package ru.github.meperry.tms.telegram_bot.command_handler;
 
 import java.time.LocalDate;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import ru.github.meperry.tms.api.api.TournamentApi;
 import ru.github.meperry.tms.api.dto.CreatingTournamentType;
 import ru.github.meperry.tms.api.dto.TournamentCreationRequest;
 import ru.github.meperry.tms.telegram_bot.command_handler.state.State;
@@ -14,7 +16,10 @@ import ru.github.meperry.tms.telegram_bot.domain.MessageForBot;
  * @author Islam Khabibullin
  */
 @Component
+@RequiredArgsConstructor
 public class CreateTournamentCommandHandler extends StatefulCommandHandler {
+
+  private final TournamentApi tournamentApi;
 
   @Override
   String getCommand() {
@@ -24,78 +29,108 @@ public class CreateTournamentCommandHandler extends StatefulCommandHandler {
   @Override
   public void handle(MessageForBot messageForBot) {
     stateRepository.save(new State(messageForBot.getChatId(), new TournamentCreationRequest()));
-    MessageExchange messageExchange = new MessageExchange(messageForBot.getChatId(), "Название?", this::handleName);
+    MessageExchange messageExchange = new MessageExchange(messageForBot.getChatId(), "Название?",
+        this::handleName
+    );
     botService.sendMessage(messageExchange);
   }
 
-  private MessageExchange handleName(Message message, String textWithoutBotName) {
+  private void handleName(Message message, String textWithoutBotName) {
     State state = getState(message.getChatId());
     ((TournamentCreationRequest) state.getData()).setName(textWithoutBotName);
     stateRepository.save(state);
 
-    return new MessageExchange(message.getChatId(), "Описание?", this::handleDescription);
+    botService.sendMessage(
+        new MessageExchange(message.getChatId(), "Описание?", this::handleDescription));
   }
 
-  private MessageExchange handleDescription(Message message, String textWithoutBotName) {
+  private void handleDescription(Message message, String textWithoutBotName) {
     State state = getState(message.getChatId());
     ((TournamentCreationRequest) state.getData()).setDescription(textWithoutBotName);
     stateRepository.save(state);
 
-    return new MessageExchange(message.getChatId(), "Дата начала?", this::handleStartDate);
+    botService.sendMessage(
+        new MessageExchange(message.getChatId(), "Дата начала?", this::handleStartDate));
   }
 
-  private MessageExchange handleStartDate(Message message, String textWithoutBotName) {
+  private void handleStartDate(Message message, String textWithoutBotName) {
     State state = getState(message.getChatId());
     ((TournamentCreationRequest) state.getData()).setStartDate(LocalDate.parse(textWithoutBotName));
     stateRepository.save(state);
 
-    return new MessageExchange(message.getChatId(), "Тип?", this::handleType);
+    botService.sendMessage(new MessageExchange(message.getChatId(), "Тип?", this::handleType));
   }
 
-  private MessageExchange handleType(Message message, String textWithoutBotName) {
+  private void handleType(Message message, String textWithoutBotName) {
     State state = getState(message.getChatId());
     CreatingTournamentType type = CreatingTournamentType.valueOf(textWithoutBotName);
     TournamentCreationRequest creationRequest = (TournamentCreationRequest) state.getData();
     creationRequest.setType(type);
     stateRepository.save(state);
 
+    MessageExchange reply;
     switch (type) {
       case SINGLE_ELIMINATION:
-        return new MessageExchange(message.getChatId(), tournamentCreationRequestConfirmationText(creationRequest), this::handleConfirmation);
+        reply = new MessageExchange(message.getChatId(),
+            tournamentCreationRequestConfirmationText(creationRequest), this::handleConfirmation
+        );
+        break;
       case PLAY_OFFS:
-        return new MessageExchange(message.getChatId(), "Количество групп?", this::handleGroupCount);
+        reply = new MessageExchange(message.getChatId(), "Количество групп?",
+            this::handleGroupCount
+        );
+        break;
       default:
         throw new RuntimeException();
     }
+    botService.sendMessage(reply);
   }
 
-  private MessageExchange handleGroupCount(Message message, String textWithoutBotName) {
+  private void handleGroupCount(Message message, String textWithoutBotName) {
     State state = getState(message.getChatId());
-    ((TournamentCreationRequest) state.getData()).setGroupCount(Integer.valueOf(textWithoutBotName));
+    ((TournamentCreationRequest) state.getData()).setGroupCount(
+        Integer.valueOf(textWithoutBotName));
     stateRepository.save(state);
 
-    return new MessageExchange(message.getChatId(), "Количество выходящих из группы?", this::handlePassingCount);
+    botService.sendMessage(
+        new MessageExchange(message.getChatId(), "Количество выходящих из группы?",
+            this::handlePassingCount
+        ));
   }
 
-  private MessageExchange handlePassingCount(Message message, String textWithoutBotName) {
+  private void handlePassingCount(Message message, String textWithoutBotName) {
     State state = getState(message.getChatId());
     TournamentCreationRequest creationRequest = (TournamentCreationRequest) state.getData();
     creationRequest.setPassingCount(Integer.valueOf(textWithoutBotName));
     stateRepository.save(state);
 
-    return new MessageExchange(message.getChatId(), tournamentCreationRequestConfirmationText(creationRequest), this::handleConfirmation);
+    botService.sendMessage(new MessageExchange(message.getChatId(),
+        tournamentCreationRequestConfirmationText(creationRequest), this::handleConfirmation
+    ));
   }
 
-  private MessageExchange handleConfirmation(Message message, String textWithoutBotName) {
+  private void handleConfirmation(Message message, String textWithoutBotName) {
     State state = getState(message.getChatId());
+    TournamentCreationRequest creationRequest = (TournamentCreationRequest) state.getData();
 
     switch (textWithoutBotName.toUpperCase()) {
       case "ДА":
-        return new MessageExchange(message.getChatId(), "Пшпшпш... Создаем турнир...");
+        tournamentApi.create(creationRequest)
+            .subscribe(tournament -> {
+              botService.sendMessage(new MessageExchange(message.getChatId(),
+                  "Турнир успешно создан, идентификатор - " + tournament.getTournamentId()
+              ));
+            });
+        break;
       case "НЕТ":
-        return new MessageExchange(message.getChatId(), "Отменено");
+        clearState(message.getChatId());
+        botService.sendMessage(new MessageExchange(message.getChatId(), "Отменено"));
+        break;
       default:
-        return new MessageExchange(message.getChatId(), "Возможные ответы: Да или Нет", this::handleConfirmation);
+        botService.sendMessage(
+            new MessageExchange(message.getChatId(), "Возможные ответы: Да или Нет",
+                this::handleConfirmation
+            ));
     }
   }
 
@@ -125,7 +160,8 @@ public class CreateTournamentCommandHandler extends StatefulCommandHandler {
         );
       case PLAY_OFFS:
         return String.format(
-            EXTENDED_TOURNAMENT_CREATION_REQUEST_TEXT_TEMPLATE + "\n\n" + CREATION_CONFIRMATION_TEXT,
+            EXTENDED_TOURNAMENT_CREATION_REQUEST_TEXT_TEMPLATE + "\n\n"
+            + CREATION_CONFIRMATION_TEXT,
             request.getName(),
             request.getDescription(),
             request.getStartDate().toString(),
