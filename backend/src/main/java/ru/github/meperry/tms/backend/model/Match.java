@@ -30,11 +30,9 @@ public class Match extends BaseEntity {
   private Group group;
 
   @Column(nullable = false)
-  @JsonIgnore
   private Integer round;
 
   @Column(nullable = false, name = "order_number")
-  @JsonIgnore
   private Integer orderNumber;
 
   @Column(name = "match_date")

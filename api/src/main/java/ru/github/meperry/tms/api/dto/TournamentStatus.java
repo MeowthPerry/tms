@@ -1,4 +1,4 @@
-package ru.github.meperry.tms.backend.model;
+package ru.github.meperry.tms.api.dto;
 
 /**
  * @author Islam Khabibullin

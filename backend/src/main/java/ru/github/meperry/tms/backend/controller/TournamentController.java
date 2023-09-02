@@ -12,7 +12,7 @@ import ru.github.meperry.tms.api.dto.CreatingTournamentType;
 import ru.github.meperry.tms.api.dto.TournamentCreationRequest;
 import ru.github.meperry.tms.backend.model.RoundRobinStageMetadata;
 import ru.github.meperry.tms.backend.model.Stage;
-import ru.github.meperry.tms.backend.model.StageType;
+import ru.github.meperry.tms.api.dto.StageType;
 import ru.github.meperry.tms.backend.model.Tournament;
 import ru.github.meperry.tms.backend.service.RoundRobinStageMetadataService;
 import ru.github.meperry.tms.backend.service.StageService;

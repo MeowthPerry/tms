@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.github.meperry.tms.backend.model.Stage;
 import ru.github.meperry.tms.backend.model.Tournament;
-import ru.github.meperry.tms.backend.model.TournamentStatus;
+import ru.github.meperry.tms.api.dto.TournamentStatus;
 import ru.github.meperry.tms.backend.repository.TournamentRepository;
 import ru.github.meperry.tms.backend.security.service.RuntimeUserService;
 

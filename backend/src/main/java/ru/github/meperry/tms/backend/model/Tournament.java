@@ -1,6 +1,5 @@
 package ru.github.meperry.tms.backend.model;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.*;
@@ -8,6 +7,7 @@ import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.github.meperry.tms.api.dto.TournamentStatus;
 import ru.github.meperry.tms.backend.security.model.User;
 
 /**
