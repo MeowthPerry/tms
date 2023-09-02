@@ -29,6 +29,8 @@ public class StartCommandHandler extends CommandHandler {
 
   @Override
   public void handle(MessageForBot messageForBot) {
+    // TODO 02.09 добавить попытку сначала аутентифицировать
+
     User forwardFrom = messageForBot.getMessage().getFrom();
     RegisterRequest registerRequest = new RegisterRequest(
         forwardFrom.getUserName(),

@@ -1,6 +1,7 @@
 package ru.github.meperry.tms.backend.model;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.*;
 
@@ -30,7 +31,7 @@ public class Tournament extends BaseEntity {
   private String description;
 
   @Column(nullable = false)
-  private Date startDate;
+  private LocalDate startDate;
 
   @ManyToOne
   @JoinColumn(name = "user_creator_id", nullable = false)

@@ -1,6 +1,6 @@
 package ru.github.meperry.tms.api.dto;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import lombok.Data;
 public class TournamentCreationRequest {
   private String name;
   private String description;
-  private Date startDate;
+  private LocalDate startDate;
   private CreatingTournamentType type;
 
   // if type == CreatingTournamentType.PLAY_OFFS

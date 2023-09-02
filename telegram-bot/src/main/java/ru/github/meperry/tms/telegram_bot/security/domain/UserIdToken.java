@@ -1,4 +1,4 @@
-package ru.github.meperry.tms.telegram_bot.command_handler.state;
+package ru.github.meperry.tms.telegram_bot.security.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,11 +9,11 @@ import org.springframework.data.redis.core.RedisHash;
  * @author Islam Khabibullin
  */
 @Data
-@RedisHash("state")
+@RedisHash("token")
 @AllArgsConstructor
-public class State {
+public class UserIdToken {
 
   @Id
-  private Long chatId;
-  private Object data;
+  private Long userId;
+  private String token;
 }

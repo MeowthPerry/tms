@@ -1,4 +1,4 @@
-package ru.github.meperry.tms.backend.security.model;
+package ru.github.meperry.tms.backend.security.domain;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -7,6 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.github.meperry.tms.backend.model.Status;
+import ru.github.meperry.tms.backend.security.model.Role;
+import ru.github.meperry.tms.backend.security.model.User;
 
 /**
  * @author Islam Khabibullin
