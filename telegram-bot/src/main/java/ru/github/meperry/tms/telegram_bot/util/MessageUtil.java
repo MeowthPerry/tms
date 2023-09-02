@@ -17,7 +17,7 @@ public class MessageUtil {
     if (!message.hasText()) {
       return false;
     }
-    return !message.getChat().isGroupChat() || message.getText()
+    return !message.isGroupMessage() || message.getText()
         .startsWith("@" + botUsername + " ");
   }
 

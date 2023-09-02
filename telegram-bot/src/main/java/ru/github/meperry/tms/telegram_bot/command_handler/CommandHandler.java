@@ -15,7 +15,11 @@ public abstract class CommandHandler {
 
   @PostConstruct
   public void subscribeToMessagesForBot() {
-    botService.subscribeToMessagesForBotByCommand(this::handle, getCommand());
+    botService.subscribeToMessagesForBotByCommand(this::handle, getCommand(), supportsGroupChat());
+  }
+
+  protected boolean supportsGroupChat() {
+    return false;
   }
 
   @Autowired

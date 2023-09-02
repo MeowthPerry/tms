@@ -35,9 +35,6 @@ public class BotService extends TelegramLongPollingBot {
 
   public BotService() {
     super(System.getenv(BOT_TOKEN_VAR_NAME));
-
-    // подписываем обработчика ответов на все сообщения их чатов, идентификатор которых есть в replyHandlers
-    subscribeToMessagesForBot(this::processReply, messageForBot -> replyHandlers.containsKey(messageForBot.getChatId()));
   }
 
   @Override
@@ -47,6 +44,12 @@ public class BotService extends TelegramLongPollingBot {
 
       if (MessageUtil.isTextMessageForBor(message, botUsername)) {
         String textWithoutBotName = MessageUtil.getTextWithoutBotName(message.getText(), botUsername);
+
+        // есть обработчик ответа, то не публикуем сообщение обработчикам
+        if (replyHandlers.containsKey(message.getChatId())) {
+          processReply(new MessageForBot(message, textWithoutBotName));
+          return;
+        }
 
         messageForBotSubject.onNext(new MessageForBot(message, textWithoutBotName));
       }
@@ -59,17 +62,16 @@ public class BotService extends TelegramLongPollingBot {
    * @param consumer обработчик сообщения
    * @param command команда
    */
-  public void subscribeToMessagesForBotByCommand(Consumer<MessageForBot> consumer, String command) {
-    subscribeToMessagesForBot(consumer, messageForBot -> messageForBot.getTextWithoutBotName().startsWith(command));
+  public void subscribeToMessagesForBotByCommand(Consumer<MessageForBot> consumer, String command,
+      boolean supportsGroupChat) {
+    subscribeToMessagesForBot(consumer,
+        messageForBot -> messageForBot.getTextWithoutBotName().startsWith(command)
+                         && (supportsGroupChat || !messageForBot.getMessage().isGroupMessage()));
   }
 
   private void subscribeToMessagesForBot(Consumer<MessageForBot> consumer,
       Predicate<MessageForBot> predicate) {
     messageForBotSubject.filter(predicate::test).subscribe(consumer::accept);
-  }
-
-  private void subscribeToMessagesForBot(Consumer<MessageForBot> consumer) {
-    messageForBotSubject.subscribe(consumer::accept);
   }
 
   @Override
