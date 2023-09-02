@@ -1,11 +1,12 @@
 package ru.github.meperry.tms.telegram_bot.service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -13,9 +14,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.github.meperry.tms.telegram_bot.command_handler.AsyncCommandHandler;
-import ru.github.meperry.tms.telegram_bot.command_handler.CommandHandler;
 import ru.github.meperry.tms.telegram_bot.domain.MessageExchange;
+import ru.github.meperry.tms.telegram_bot.domain.MessageForBot;
+import ru.github.meperry.tms.telegram_bot.util.MessageUtil;
 
 /**
  * @author Islam Khabibullin
@@ -28,88 +29,47 @@ public class BotService extends TelegramLongPollingBot {
 
   private static final String BOT_TOKEN_VAR_NAME = "bot.token";
 
-  private final List<CommandHandler> commandHandlers;
-  private final List<AsyncCommandHandler> asyncCommandHandlers;
+  private final PublishSubject<MessageForBot> messageForBotSubject = PublishSubject.create();
 
   private final Map<Long, BiFunction<Message, String, MessageExchange>> replyHandlers = new HashMap<>();
 
-  public BotService(List<CommandHandler> commandHandlers,
-      List<AsyncCommandHandler> asyncCommandHandlers) {
+  public BotService() {
     super(System.getenv(BOT_TOKEN_VAR_NAME));
-    this.commandHandlers = commandHandlers;
-    this.asyncCommandHandlers = asyncCommandHandlers;
+
+    // подписываем обработчика ответов на все сообщения их чатов, идентификатор которых есть в replyHandlers
+    subscribeToMessagesForBot(this::processReply, messageForBot -> replyHandlers.containsKey(messageForBot.getChatId()));
   }
 
-  // TODO 28.08 refactor dis shit
   @Override
   public void onUpdateReceived(Update update) {
     if (update.hasMessage()) {
       Message message = update.getMessage();
 
-      if (isTextMessage(message)) {
+      if (MessageUtil.isTextMessageForBor(message, botUsername)) {
+        String textWithoutBotName = MessageUtil.getTextWithoutBotName(message.getText(), botUsername);
 
-        Long chatId = update.getMessage().getChatId();
-        String textWithoutBotName = getTextWithoutBotName(message.getText());
-
-        // TODO 27.08 заменить на switch-case: команда из группового чата, команда из приватного чата, обычное текстовое сообщение
-        // если это команда, то обрабатываем команду
-        if (isCommandMessage(message)) {
-          Optional<CommandHandler> commandHandlerOptional = commandHandlers.stream()
-              .filter(commandHandler -> commandHandler.supports(message, textWithoutBotName))
-              .findFirst();
-          if (commandHandlerOptional.isPresent()) {
-            MessageExchange messageExchange = commandHandlerOptional.get().handle(message,
-                textWithoutBotName
-            );
-            sendMessage(messageExchange);
-          }
-          else {
-
-            Optional<AsyncCommandHandler> asyncCommandHandlerOptional = asyncCommandHandlers.stream()
-                .filter(commandHandler -> commandHandler.supports(message,
-                    textWithoutBotName
-                ))
-                .findFirst();
-
-            if (asyncCommandHandlerOptional.isPresent()) {
-              asyncCommandHandlerOptional.get()
-                  .handle(message, textWithoutBotName)
-                  .subscribe(this::sendMessage);
-            }
-            else {
-              sendMessage(chatId, "Не поддерживаемая команда. Отправьте `/help` для помощи.");
-            }
-          }
-        }
-        // если нет, ищем среди обработчиков ответов обработчик для данного chatId
-        else if (replyHandlers.containsKey(chatId)) {
-          BiFunction<Message, String, MessageExchange> replyHandler = replyHandlers.get(chatId);
-          sendMessage(replyHandler.apply(message, textWithoutBotName));
-        }
-        // если нет обработчика пишем, что неправильное сообщение
-        else {
-          sendMessage(chatId, "Не поддерживаемая команда. Отправьте `/help` для помощи.");
-        }
+        messageForBotSubject.onNext(new MessageForBot(message, textWithoutBotName));
       }
     }
   }
 
-  private String getTextWithoutBotName(String text) {
-    if (text.startsWith("@" + botUsername + " ")) {
-      return text.substring(("@" + botUsername + " ").length());
-    }
-    return text;
+  /**
+   * Подписка на сообщения начинающиеся на /command
+   *
+   * @param consumer обработчик сообщения
+   * @param command команда
+   */
+  public void subscribeToMessagesForBotByCommand(Consumer<MessageForBot> consumer, String command) {
+    subscribeToMessagesForBot(consumer, messageForBot -> messageForBot.getTextWithoutBotName().startsWith(command));
   }
 
-  private boolean isTextMessage(Message message) {
-    return message.hasText()
-           && (!message.getChat().isGroupChat()
-               || message.getText().startsWith("@" + botUsername + " "));
+  private void subscribeToMessagesForBot(Consumer<MessageForBot> consumer,
+      Predicate<MessageForBot> predicate) {
+    messageForBotSubject.filter(predicate::test).subscribe(consumer::accept);
   }
 
-  private boolean isCommandMessage(Message message) {
-    String text = message.getText();
-    return text.startsWith("/") || text.startsWith("@" + botUsername + " " + "/");
+  private void subscribeToMessagesForBot(Consumer<MessageForBot> consumer) {
+    messageForBotSubject.subscribe(consumer::accept);
   }
 
   @Override
@@ -117,7 +77,7 @@ public class BotService extends TelegramLongPollingBot {
     return botUsername;
   }
 
-  private void sendMessage(MessageExchange messageExchange) {
+  public void sendMessage(MessageExchange messageExchange) {
     if (messageExchange.hasReplyHandler()) {
       sendMessage(
           messageExchange.getChatId(),
@@ -130,13 +90,19 @@ public class BotService extends TelegramLongPollingBot {
     }
   }
 
-  private void sendMessage(long chatId, String message,
+  public void sendMessage(long chatId, String message,
       BiFunction<Message, String, MessageExchange> replyHandler) {
     replyHandlers.put(chatId, replyHandler);
     sendMessage(chatId, message);
   }
 
-  private void sendMessage(long chatId, String message) {
+  /**
+   * Отправка текстового сообщения в чат
+   *
+   * @param chatId идентификатор чата
+   * @param message текст сообщения
+   */
+  public void sendMessage(long chatId, String message) {
     SendMessage sendMessage = new SendMessage(String.valueOf(chatId), message);
 
     try {
@@ -145,5 +111,14 @@ public class BotService extends TelegramLongPollingBot {
     catch (TelegramApiException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  // обработчик ответов
+  private void processReply(MessageForBot messageForBot) {
+    Message message = messageForBot.getMessage();
+    Long chatId = message.getChatId();
+
+    BiFunction<Message, String, MessageExchange> replyHandler = replyHandlers.remove(chatId);
+    sendMessage(replyHandler.apply(message, messageForBot.getTextWithoutBotName()));
   }
 }

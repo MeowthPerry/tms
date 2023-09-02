@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.github.meperry.tms.api.dto.TournamentCreationRequest;
 import ru.github.meperry.tms.telegram_bot.command_handler.state.State;
-import ru.github.meperry.tms.telegram_bot.command_handler.state.StateRepository;
 import ru.github.meperry.tms.telegram_bot.domain.MessageExchange;
+import ru.github.meperry.tms.telegram_bot.domain.MessageForBot;
 
 /**
  * @author Islam Khabibullin
@@ -13,23 +13,20 @@ import ru.github.meperry.tms.telegram_bot.domain.MessageExchange;
 @Component
 public class CreateTournamentCommandHandler extends StatefulCommandHandler {
 
-  public CreateTournamentCommandHandler(StateRepository stateRepository) {
-    super(stateRepository);
+  @Override
+  String getCommand() {
+    return "/create_tournament";
   }
 
   @Override
-  public boolean supports(Message message, String textWithoutBotName) {
-    return textWithoutBotName.startsWith("/create_tournament");
-  }
-
-  @Override
-  public MessageExchange handle(Message message, String textWithoutBotName) {
-    stateRepository.save(new State(message.getChatId(), new TournamentCreationRequest()));
-    return new MessageExchange(message.getChatId(), "Отлично! Давайте обсудим детали вашего турнира. Какое будет название?", this::handleName);
+  public void handle(MessageForBot messageForBot) {
+    stateRepository.save(new State(messageForBot.getChatId(), new TournamentCreationRequest()));
+    MessageExchange messageExchange = new MessageExchange(messageForBot.getChatId(), "Название?", this::handleName);
+    botService.sendMessage(messageExchange);
   }
 
   private MessageExchange handleName(Message message, String textWithoutBotName) {
-    State state = stateRepository.findById(message.getChatId()).get();
+    State state = getState(message.getChatId());
     String name = message.getText();
     ((TournamentCreationRequest) state.getData()).setName(name);
     stateRepository.save(state);

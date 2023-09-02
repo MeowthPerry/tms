@@ -1,13 +1,22 @@
 package ru.github.meperry.tms.telegram_bot.command_handler;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.github.meperry.tms.telegram_bot.command_handler.state.State;
 import ru.github.meperry.tms.telegram_bot.command_handler.state.StateRepository;
 
 /**
  * @author Islam Khabibullin
  */
-@RequiredArgsConstructor
-public abstract class StatefulCommandHandler implements CommandHandler {
+public abstract class StatefulCommandHandler extends CommandHandler {
 
-  protected final StateRepository stateRepository;
+  protected StateRepository stateRepository;
+
+  @Autowired
+  public void setStateRepository(StateRepository stateRepository) {
+    this.stateRepository = stateRepository;
+  }
+
+  protected State getState(Long chatId) {
+    return stateRepository.findById(chatId).get();
+  }
 }

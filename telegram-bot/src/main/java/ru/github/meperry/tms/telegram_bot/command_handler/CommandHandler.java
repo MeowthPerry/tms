@@ -1,14 +1,29 @@
 package ru.github.meperry.tms.telegram_bot.command_handler;
 
-import org.telegram.telegrambots.meta.api.objects.Message;
-import ru.github.meperry.tms.telegram_bot.domain.MessageExchange;
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.github.meperry.tms.telegram_bot.domain.MessageForBot;
+import ru.github.meperry.tms.telegram_bot.service.BotService;
 
 /**
  * @author Islam Khabibullin
  */
-public interface CommandHandler {
+public abstract class CommandHandler {
 
-  boolean supports(Message message, String textWithoutBotName);
+  protected BotService botService;
 
-  MessageExchange handle(Message message, String textWithoutBotName);
+  @PostConstruct
+  public void subscribeToMessagesForBot() {
+    botService.subscribeToMessagesForBotByCommand(this::handle, getCommand());
+  }
+
+  @Autowired
+  public void setBotService(BotService botService) {
+    this.botService = botService;
+  }
+
+  abstract String getCommand();
+
+  abstract void handle(MessageForBot message);
 }
