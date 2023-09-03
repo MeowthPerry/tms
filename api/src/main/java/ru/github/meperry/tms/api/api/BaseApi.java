@@ -28,15 +28,7 @@ public abstract class BaseApi {
       @Nullable T body,
       Class<S> responseClass
   ) {
-    WebClient.RequestBodySpec request = webClient.method(method).uri(uri);
-
-    if (token != null) {
-      request.header(AUTHORIZATION_HEADER, token);
-    }
-
-    if (body != null) {
-      request.body(Mono.just(body), body.getClass());
-    }
+    WebClient.RequestBodySpec request = getRequest(method, uri, token, body);
 
     return request.retrieve().bodyToMono(responseClass);
   }
@@ -47,6 +39,13 @@ public abstract class BaseApi {
       @Nullable String token,
       @Nullable T body
   ) {
+    WebClient.RequestBodySpec request = getRequest(method, uri, token, body);
+
+    return request.retrieve().toBodilessEntity();
+  }
+
+  private <T> WebClient.RequestBodySpec getRequest(HttpMethod method, String uri,
+      String token, T body) {
     WebClient.RequestBodySpec request = webClient.method(method).uri(uri);
 
     if (token != null) {
@@ -56,7 +55,6 @@ public abstract class BaseApi {
     if (body != null) {
       request.body(Mono.just(body), body.getClass());
     }
-
-    return request.retrieve().toBodilessEntity();
+    return request;
   }
 }
