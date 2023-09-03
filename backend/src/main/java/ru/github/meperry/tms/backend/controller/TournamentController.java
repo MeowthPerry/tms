@@ -123,11 +123,17 @@ public class TournamentController {
    * Распределяет участников по группам и генерирует матчи для первой стадии (возможно единственной) турнира
    */
   @PutMapping("/{tournamentId}/start")
-  public ResponseEntity<Tournament> start(@PathVariable Long tournamentId) {
-    // TODO 19.08 Сделать так, чтобы только создатель мог начать турнир
+  public ResponseEntity<Tournament> start(@PathVariable Long tournamentId)
+      throws IllegalAccessException {
 
     Tournament tournament = tournamentService.findById(tournamentId)
         .orElseThrow(RuntimeException::new);
+
+    RuntimeUser runtimeUser = runtimeUserService.currentUser();
+    if (!tournament.getCreator().getUserId().equals(runtimeUser.getId())) {
+      throw new IllegalAccessException("Only creators can start tournament");
+    }
+
     return ResponseEntity.ok(tournamentService.start(tournament));
   }
 
