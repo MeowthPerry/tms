@@ -3,6 +3,7 @@ package ru.github.meperry.tms.api.api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -37,5 +38,14 @@ public abstract class BaseApi {
         .body(Mono.just(body), body.getClass())
         .retrieve()
         .bodyToMono(responseClass);
+  }
+
+  protected Mono<ResponseEntity<Void>> request(HttpMethod method, String uri, String token) {
+    return webClient.method(method)
+        .uri(uri)
+        .header(AUTHORIZATION_HEADER, token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .toBodilessEntity();
   }
 }

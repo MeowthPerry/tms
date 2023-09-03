@@ -14,6 +14,9 @@ import ru.github.meperry.tms.backend.model.RoundRobinStageMetadata;
 import ru.github.meperry.tms.backend.model.Stage;
 import ru.github.meperry.tms.api.dto.StageType;
 import ru.github.meperry.tms.backend.model.Tournament;
+import ru.github.meperry.tms.backend.security.domain.RuntimeUser;
+import ru.github.meperry.tms.backend.security.model.User;
+import ru.github.meperry.tms.backend.security.service.RuntimeUserService;
 import ru.github.meperry.tms.backend.service.RoundRobinStageMetadataService;
 import ru.github.meperry.tms.backend.service.StageService;
 import ru.github.meperry.tms.backend.service.TournamentService;
@@ -29,6 +32,7 @@ public class TournamentController {
   private final TournamentService tournamentService;
   private final StageService stageService;
   private final RoundRobinStageMetadataService roundRobinStageMetadataService;
+  private final RuntimeUserService runtimeUserService;
 
   @GetMapping("/{tournamentId}")
   public ResponseEntity<Tournament> get(@PathVariable Long tournamentId) {
@@ -36,6 +40,22 @@ public class TournamentController {
         // TODO 12.08.23 заменить на понятные исключения
         .orElseThrow(RuntimeException::new);
     return ResponseEntity.ok(tournament);
+  }
+  
+  @PutMapping("/{tournamentId}/register")
+  public void registerToTournament(@PathVariable Long tournamentId) {
+    RuntimeUser runtimeUser = runtimeUserService.currentUser();
+
+    Tournament tournament = tournamentService.findById(tournamentId)
+        .orElseThrow(RuntimeException::new);
+
+    List<User> participants = tournament.getParticipants();
+    if (participants == null) {
+      participants = new ArrayList<>();
+      tournament.setParticipants(participants);
+    }
+    participants.add(runtimeUser.user());
+    tournamentService.save(tournament);
   }
 
   @PostMapping
