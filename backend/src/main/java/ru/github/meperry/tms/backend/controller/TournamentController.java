@@ -5,18 +5,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.github.meperry.tms.api.dto.CreatingTournamentType;
+import ru.github.meperry.tms.api.dto.StageType;
 import ru.github.meperry.tms.api.dto.TournamentCreationRequest;
+import ru.github.meperry.tms.api.dto.TournamentDto;
 import ru.github.meperry.tms.backend.model.RoundRobinStageMetadata;
 import ru.github.meperry.tms.backend.model.Stage;
-import ru.github.meperry.tms.api.dto.StageType;
 import ru.github.meperry.tms.backend.model.Tournament;
 import ru.github.meperry.tms.backend.security.domain.RuntimeUser;
 import ru.github.meperry.tms.backend.security.model.User;
 import ru.github.meperry.tms.backend.security.service.RuntimeUserService;
+import ru.github.meperry.tms.backend.security.service.UserService;
 import ru.github.meperry.tms.backend.service.RoundRobinStageMetadataService;
 import ru.github.meperry.tms.backend.service.StageService;
 import ru.github.meperry.tms.backend.service.TournamentService;
@@ -33,6 +36,8 @@ public class TournamentController {
   private final StageService stageService;
   private final RoundRobinStageMetadataService roundRobinStageMetadataService;
   private final RuntimeUserService runtimeUserService;
+  private final UserService userService;
+  private final ModelMapper modelMapper;
 
   @GetMapping("/{tournamentId}")
   public ResponseEntity<Tournament> get(@PathVariable Long tournamentId) {
@@ -40,6 +45,18 @@ public class TournamentController {
         // TODO 12.08.23 заменить на понятные исключения
         .orElseThrow(RuntimeException::new);
     return ResponseEntity.ok(tournament);
+  }
+
+  @GetMapping("/my_tournaments")
+  public ResponseEntity<List<TournamentDto>> runtimeUserTournaments() {
+    Long runtimeUserId = runtimeUserService.currentUser().getId();
+
+    User user = userService.findById(runtimeUserId).get();
+
+    return ResponseEntity.ok(user.getTournaments()
+        .stream()
+        .map(tournament -> modelMapper.map(tournament, TournamentDto.class))
+        .collect(Collectors.toList()));
   }
   
   @PutMapping("/{tournamentId}/register")

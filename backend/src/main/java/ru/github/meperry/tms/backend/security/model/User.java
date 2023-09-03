@@ -1,11 +1,13 @@
 package ru.github.meperry.tms.backend.security.model;
 
+import java.util.List;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.github.meperry.tms.backend.model.BaseEntity;
 import ru.github.meperry.tms.backend.model.Status;
+import ru.github.meperry.tms.backend.model.Tournament;
 
 @Entity
 @Table(name = "users")
@@ -46,4 +48,7 @@ public class User extends BaseEntity {
   @Column(name = "status")
   @JsonIgnore
   private Status status;
+
+  @ManyToMany(mappedBy = "participants")
+  private List<Tournament> tournaments;
 }
