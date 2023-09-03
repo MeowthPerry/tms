@@ -29,7 +29,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserDto'
   /auth/login:
     post:
       tags:
@@ -46,9 +46,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserDto'
+  /tournamen/my_tournaments:
+    get:
+      tags:
+        - tournament
+      summary: Get information about current user's tournaments
+      responses:
+        200:
+          description: Information current user's tournaments successfully sent
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TournamentDto'
   /tournament:
-    # TODO 14.08 описать метод получения данных турнира
     post:
       tags:
         - tournament
@@ -59,13 +72,68 @@ paths:
             schema:
               $ref: '#/components/schemas/TournamentCreationRequest'
       responses:
-        200:
+        201:
           description: Successfully created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tournament'
-    # TODO 14.08 описать метод начала турнира
+                $ref: '#/components/schemas/TournamentDto'
+  /tournament/{tournamentId}:
+    get:
+      tags:
+        - tournament
+      summary: Get information about specific tournament
+      parameters:
+        - name: tournamentId
+          in: path
+          required: true
+          description: Id of tournament
+          schema:
+            type: integer
+            example: 10
+      responses:
+        200:
+          description: Information about specific tournament successfully sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentDto'
+  /tournament/{tournamentId}/register:
+    put:
+      tags:
+        - tournament
+      summary: Register current user to specific tournament
+      parameters:
+        - name: tournamentId
+          in: path
+          required: true
+          description: Id of tournament
+          schema:
+            type: integer
+            example: 10
+      responses:
+        200:
+          description: Current user successfully registered to tournament
+  /tournamen/{tournamentId}/start:
+    put:
+      tags:
+        - tournament
+      summary: Distributes participants into groups and generates matches for the first stage of the tournament
+      parameters:
+        - name: tournamentId
+          in: path
+          required: true
+          description: Id of tournament
+          schema:
+            type: integer
+            example: 10
+      responses:
+        200:
+          description: Started tournament
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentDto'
   /invitation:
     post:
       tags:
@@ -97,10 +165,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tournament'
+                $ref: '#/components/schemas/TournamentDto'
 components:
   schemas:
-    User:
+    UserDto:
       type: object
       properties:
         userId:
@@ -118,10 +186,10 @@ components:
         email:
           type: string
           example: 'ivan@example.com'
-    Group:
+    GroupDto:
       # TODO 14.08 дописать
       type: object
-    Stage:
+    StageDto:
       type: object
       properties:
         stageId:
@@ -136,11 +204,11 @@ components:
         groups:
           type: array
           items:
-            $ref: '#/components/schemas/Group'
+            $ref: '#/components/schemas/GroupDto'
         orderNumber:
           type: integer
           example: 1
-    Tournament:
+    TournamentDto:
       type: object
       properties:
         tournamentId:
@@ -157,11 +225,11 @@ components:
           format: 'yyyy-MM-dd'
           example: '2024-01-01'
         creator:
-          $ref: '#/components/schemas/User'
+          $ref: '#/components/schemas/UserDto'
         participants:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/UserDto'
         tournamentStatus:
           type: string
           example: 'NOT_STARTED'
@@ -173,7 +241,7 @@ components:
         stages:
           type: array
           items:
-            $ref: '#/components/schemas/Stage'
+            $ref: '#/components/schemas/StageDto'
     TournamentCreationRequest:
       type: object
       properties:
