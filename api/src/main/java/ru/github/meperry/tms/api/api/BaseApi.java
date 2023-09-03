@@ -1,10 +1,9 @@
 package ru.github.meperry.tms.api.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -22,42 +21,42 @@ public abstract class BaseApi {
     this.webClient = webClient;
   }
 
-  // TODO 03.09 отрефакторить класс так, чтобы не было такого количества одинаковых request методов
+  protected <T, S> Mono<S> request(
+      HttpMethod method,
+      String uri,
+      @Nullable String token,
+      @Nullable T body,
+      Class<S> responseClass
+  ) {
+    WebClient.RequestBodySpec request = webClient.method(method).uri(uri);
 
-  protected <T, S> Mono<S> request(HttpMethod method, String uri, T body, Class<S> responseClass) {
-    return webClient.method(method)
-        .uri(uri)
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(Mono.just(body), body.getClass())
-        .retrieve()
-        .bodyToMono(responseClass);
+    if (token != null) {
+      request.header(AUTHORIZATION_HEADER, token);
+    }
+
+    if (body != null) {
+      request.body(Mono.just(body), body.getClass());
+    }
+
+    return request.retrieve().bodyToMono(responseClass);
   }
 
-  protected <T, S> Mono<S> request(HttpMethod method, String uri, String token, T body, Class<S> responseClass) {
-    return webClient.method(method)
-        .uri(uri)
-        .header(AUTHORIZATION_HEADER, token)
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(Mono.just(body), body.getClass())
-        .retrieve()
-        .bodyToMono(responseClass);
-  }
+  protected <T> Mono<ResponseEntity<Void>> request(
+      HttpMethod method,
+      String uri,
+      @Nullable String token,
+      @Nullable T body
+  ) {
+    WebClient.RequestBodySpec request = webClient.method(method).uri(uri);
 
-  protected <T> Mono<T> request(HttpMethod method, String uri, String token, ParameterizedTypeReference<T> responseTypeReference) {
-    return webClient.method(method)
-        .uri(uri)
-        .header(AUTHORIZATION_HEADER, token)
-        .contentType(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .bodyToMono(responseTypeReference);
-  }
+    if (token != null) {
+      request.header(AUTHORIZATION_HEADER, token);
+    }
 
-  protected Mono<ResponseEntity<Void>> request(HttpMethod method, String uri, String token) {
-    return webClient.method(method)
-        .uri(uri)
-        .header(AUTHORIZATION_HEADER, token)
-        .contentType(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .toBodilessEntity();
+    if (body != null) {
+      request.body(Mono.just(body), body.getClass());
+    }
+
+    return request.retrieve().toBodilessEntity();
   }
 }

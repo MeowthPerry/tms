@@ -9,10 +9,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.github.meperry.tms.api.dto.CreatingTournamentType;
-import ru.github.meperry.tms.api.dto.StageType;
-import ru.github.meperry.tms.api.dto.TournamentCreationRequest;
-import ru.github.meperry.tms.api.dto.TournamentDto;
+import ru.github.meperry.tms.api.dto.*;
 import ru.github.meperry.tms.backend.model.RoundRobinStageMetadata;
 import ru.github.meperry.tms.backend.model.Stage;
 import ru.github.meperry.tms.backend.model.Tournament;
@@ -48,15 +45,17 @@ public class TournamentController {
   }
 
   @GetMapping("/my_tournaments")
-  public ResponseEntity<List<TournamentDto>> runtimeUserTournaments() {
+  public ResponseEntity<TournamentDtoList> runtimeUserTournaments() {
     Long runtimeUserId = runtimeUserService.currentUser().getId();
 
     User user = userService.findById(runtimeUserId).get();
 
-    return ResponseEntity.ok(user.getTournaments()
+    List<TournamentDto> tournaments = user.getTournaments()
         .stream()
         .map(tournament -> modelMapper.map(tournament, TournamentDto.class))
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(new TournamentDtoList(tournaments));
   }
   
   @PutMapping("/{tournamentId}/register")

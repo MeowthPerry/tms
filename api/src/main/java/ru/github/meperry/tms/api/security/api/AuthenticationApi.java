@@ -15,10 +15,10 @@ import ru.github.meperry.tms.api.security.dto.UserToken;
 public class AuthenticationApi extends BaseApi {
 
   public Mono<UserToken> login(LoginRequest loginRequest) {
-    return request(HttpMethod.POST, "/api/auth/login", loginRequest, UserToken.class);
+    return request(HttpMethod.POST, "/api/auth/login", null, loginRequest, UserToken.class);
   }
 
   public Mono<UserToken> register(RegisterRequest registerRequest) {
-    return request(HttpMethod.POST, "/api/auth/register", registerRequest, UserToken.class);
+    return request(HttpMethod.POST, "/api/auth/register", null, registerRequest, UserToken.class);
   }
 }

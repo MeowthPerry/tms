@@ -31,11 +31,11 @@ public class MyTournamentsCommandHandler extends CommandHandler {
     User from = message.getMessage().getFrom();
     tournamentApi.myTournaments(authenticationService.getToken(from))
         .subscribe(
-            tournaments -> botService.sendMessage(message.getChatId(), myTournamentsMessage(tournaments)),
+            tournaments -> botService.sendMessage(message.getChatId(), myTournamentsMessage(tournaments.getResult())),
             error -> authenticationService.loginOrRegister(from)
                 .subscribe(token -> tournamentApi.myTournaments(token)
                     .subscribe(tournaments -> botService.sendMessage(message.getChatId(),
-                        myTournamentsMessage(tournaments)
+                        myTournamentsMessage(tournaments.getResult())
                     )))
         );
   }
