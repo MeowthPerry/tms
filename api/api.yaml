@@ -114,7 +114,7 @@ paths:
       responses:
         200:
           description: Current user successfully registered to tournament
-  /tournamen/{tournamentId}/start:
+  /tournament/{tournamentId}/start:
     put:
       tags:
         - tournament
@@ -147,7 +147,7 @@ paths:
       responses:
         200:
           description: User successfully invited
-  /{invitationId}/accept:
+  /invitation/{invitationId}/accept:
     put:
       tags:
         - invitation
