@@ -5,12 +5,14 @@ import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.User;
 import ru.github.meperry.tms.api.api.TournamentApi;
 import ru.github.meperry.tms.api.dto.CreatingTournamentType;
 import ru.github.meperry.tms.api.dto.TournamentCreationRequest;
 import ru.github.meperry.tms.telegram_bot.command_handler.state.State;
 import ru.github.meperry.tms.telegram_bot.domain.MessageExchange;
 import ru.github.meperry.tms.telegram_bot.domain.MessageForBot;
+import ru.github.meperry.tms.telegram_bot.security.service.AuthenticationService;
 
 /**
  * @author Islam Khabibullin
@@ -20,6 +22,7 @@ import ru.github.meperry.tms.telegram_bot.domain.MessageForBot;
 public class CreateTournamentCommandHandler extends StatefulCommandHandler {
 
   private final TournamentApi tournamentApi;
+  private final AuthenticationService authenticationService;
 
   @Override
   String getCommand() {
@@ -115,12 +118,12 @@ public class CreateTournamentCommandHandler extends StatefulCommandHandler {
 
     switch (textWithoutBotName.toUpperCase()) {
       case "ДА":
-        tournamentApi.create(creationRequest)
-            .subscribe(tournament -> {
-              botService.sendMessage(new MessageExchange(message.getChatId(),
-                  "Турнир успешно создан, идентификатор - " + tournament.getTournamentId()
-              ));
-            });
+        User from = message.getFrom();
+        tournamentApi
+            .create(authenticationService.getToken(from), creationRequest)
+            .subscribe(tournament -> botService.sendMessage(
+                new MessageExchange(message.getChatId(), "Турнир успешно создан, идентификатор - " + tournament.getTournamentId()
+            )));
         break;
       case "НЕТ":
         clearState(message.getChatId());

@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
+import ru.github.meperry.tms.api.api.BaseApi;
 import ru.github.meperry.tms.backend.security.jwt.exception.JwtAuthenticationException;
 
 @Component
@@ -66,7 +67,7 @@ public class JwtTokenProvider {
     if (cookie != null) {
       return cookie.getValue();
     }
-    return null;
+    return req.getHeader(BaseApi.AUTHORIZATION_HEADER); // вернет null, если хедера нет
   }
 
   public boolean validateToken(String token) {

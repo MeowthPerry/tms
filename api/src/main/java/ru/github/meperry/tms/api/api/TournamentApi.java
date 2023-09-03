@@ -12,7 +12,7 @@ import ru.github.meperry.tms.api.dto.TournamentDto;
 @Component
 public class TournamentApi extends BaseApi {
 
-  public Mono<TournamentDto> create(TournamentCreationRequest request) {
-    return request(HttpMethod.POST, request, TournamentDto.class);
+  public Mono<TournamentDto> create(String token, TournamentCreationRequest request) {
+    return request(HttpMethod.POST, "/api/tournament", token, request, TournamentDto.class);
   }
 }

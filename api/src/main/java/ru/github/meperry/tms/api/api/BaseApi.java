@@ -13,14 +13,26 @@ public abstract class BaseApi {
 
   protected WebClient webClient;
 
+  public static final String AUTHORIZATION_HEADER = "Authorization";
+
   @Autowired
   public void setWebClient(WebClient webClient) {
     this.webClient = webClient;
   }
 
-  protected <T, S> Mono<S> request(HttpMethod method, T body, Class<S> responseClass) {
+  protected <T, S> Mono<S> request(HttpMethod method, String uri, T body, Class<S> responseClass) {
     return webClient.method(method)
-        .uri("/api/auth/register")
+        .uri(uri)
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(Mono.just(body), body.getClass())
+        .retrieve()
+        .bodyToMono(responseClass);
+  }
+
+  protected <T, S> Mono<S> request(HttpMethod method, String uri, String token, T body, Class<S> responseClass) {
+    return webClient.method(method)
+        .uri(uri)
+        .header(AUTHORIZATION_HEADER, token)
         .contentType(MediaType.APPLICATION_JSON)
         .body(Mono.just(body), body.getClass())
         .retrieve()
