@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.github.meperry.tms.backend.model.Stage;
 import ru.github.meperry.tms.backend.model.Tournament;
 import ru.github.meperry.tms.api.dto.TournamentStatus;
@@ -37,6 +38,7 @@ public class TournamentService {
     return tournamentRepository.findById(id);
   }
 
+  @Transactional
   public Tournament start(Tournament tournament) {
     Stage firstStage = tournament.getStages()
         .stream()

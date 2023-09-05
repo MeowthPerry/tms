@@ -122,7 +122,7 @@ public class TournamentController {
    * Распределяет участников по группам и генерирует матчи для первой стадии (возможно единственной) турнира
    */
   @PutMapping("/{tournamentId}/start")
-  public ResponseEntity<Tournament> start(@PathVariable Long tournamentId)
+  public ResponseEntity<TournamentDto> start(@PathVariable Long tournamentId)
       throws IllegalAccessException {
 
     Tournament tournament = tournamentService.findById(tournamentId)
@@ -133,7 +133,9 @@ public class TournamentController {
       throw new IllegalAccessException("Only creators can start tournament");
     }
 
-    return ResponseEntity.ok(tournamentService.start(tournament));
+    Tournament started = tournamentService.start(tournament);
+
+    return ResponseEntity.ok(modelMapper.map(started, TournamentDto.class));
   }
 
   private List<Stage> createStagesByType(CreatingTournamentType type) {

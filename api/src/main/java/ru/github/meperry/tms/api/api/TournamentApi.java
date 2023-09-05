@@ -22,6 +22,10 @@ public class TournamentApi extends BaseApi {
     return request(HttpMethod.PUT, String.format("/api/tournament/%d/register", tournamentId), token, null);
   }
 
+  public Mono<TournamentDto> startTournament(String token, Long tournamentId) {
+    return request(HttpMethod.PUT, String.format("/api/tournament/%d/start", tournamentId), token, null, TournamentDto.class);
+  }
+
   public Mono<TournamentDtoList> myTournaments(String token) {
     return request(HttpMethod.GET, "/api/tournament/my_tournaments", token, null, TournamentDtoList.class);
   }

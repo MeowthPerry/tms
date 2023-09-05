@@ -6,6 +6,7 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.github.meperry.tms.backend.model.Group;
 import ru.github.meperry.tms.backend.model.Match;
 import ru.github.meperry.tms.backend.model.Stage;
@@ -27,6 +28,7 @@ public class StageService {
     return stageRepository.save(stage);
   }
 
+  @Transactional
   public void generateGroupsWithMatchesAndSave(Stage stage, List<User> participants) {
 
     List<Group> groups;

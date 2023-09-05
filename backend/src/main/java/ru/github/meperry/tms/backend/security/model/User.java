@@ -3,6 +3,7 @@ package ru.github.meperry.tms.backend.security.model;
 import java.util.List;
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.github.meperry.tms.backend.model.BaseEntity;
@@ -50,5 +51,6 @@ public class User extends BaseEntity {
   private Status status;
 
   @ManyToMany(mappedBy = "participants")
+  @JsonBackReference
   private List<Tournament> tournaments;
 }

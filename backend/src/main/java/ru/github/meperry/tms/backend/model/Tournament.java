@@ -43,6 +43,7 @@ public class Tournament extends BaseEntity {
       name = "link_tournament_user",
       joinColumns = @JoinColumn(name = "tournament_id"),
       inverseJoinColumns = @JoinColumn(name = "user_id"))
+  @JsonManagedReference
   private List<User> participants;
 
   @Enumerated(EnumType.STRING)
