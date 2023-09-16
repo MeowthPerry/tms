@@ -29,14 +29,12 @@ public class MyTournamentsCommandHandler extends CommandHandler {
   @Override
   void handle(MessageForBot message) {
     User from = message.getMessage().getFrom();
-    tournamentApi.myTournaments(authenticationService.getToken(from))
+
+    tournamentApi.myTournaments(authenticationService.getToken(from), tokenSupplier(from))
         .subscribe(
-            tournaments -> botService.sendMessage(message.getChatId(), myTournamentsMessage(tournaments.getResult())),
-            error -> authenticationService.loginOrRegister(from)
-                .subscribe(token -> tournamentApi.myTournaments(token)
-                    .subscribe(tournaments -> botService.sendMessage(message.getChatId(),
-                        myTournamentsMessage(tournaments.getResult())
-                    )))
+            tournaments -> botService.sendMessage(
+                message.getChatId(),
+                myTournamentsMessage(tournaments.getResult()))
         );
   }
 

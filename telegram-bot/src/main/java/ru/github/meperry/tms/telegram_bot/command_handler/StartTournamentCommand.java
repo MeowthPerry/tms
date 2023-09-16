@@ -38,16 +38,9 @@ public class StartTournamentCommand extends CommandHandler {
 
     botService.sendMessage(message.getChatId(), "Матчи генерируются...");
 
-    tournamentApi.startTournament(authenticationService.getToken(from), tournamentId)
+    tournamentApi.startTournament(authenticationService.getToken(from), tokenSupplier(from), tournamentId)
         .subscribe(
-            response -> botService.sendMessage(message.getChatId(), getGeneratedMatches(response)),
-            error -> authenticationService.loginOrRegister(from)
-                .subscribe(
-                    token -> tournamentApi.startTournament(token, tournamentId).subscribe(
-                        response -> botService.sendMessage(message.getChatId(),
-                            getGeneratedMatches(response)
-                        )
-                    ))
+            response -> botService.sendMessage(message.getChatId(), getGeneratedMatches(response))
         );
   }
 

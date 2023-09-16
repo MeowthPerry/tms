@@ -29,15 +29,9 @@ public class RegisterCommandHandler extends CommandHandler {
     Long tournamentId = Long.valueOf(
         message.getTextWithoutBotName().substring((getCommand() + " ").length()));
 
-    tournamentApi.registerToTournament(authenticationService.getToken(from), tournamentId)
+    tournamentApi.registerToTournament(authenticationService.getToken(from), tokenSupplier(from), tournamentId)
         .subscribe(
-            response -> botService.sendMessage(message.getChatId(),
-                "Вы успешно зарегистрировались на турнир"
-            ),
-            // TODO 03.09 отрефакторить так, чтобы для каждого запроса с токеном было проверка на ошибочный статус 403, в случае которого нужно попробовать обновить статус
-            error -> authenticationService.loginOrRegister(from)
-                .subscribe(
-                    token -> tournamentApi.registerToTournament(token, tournamentId).subscribe())
+            response -> botService.sendMessage(message.getChatId(), "Вы успешно зарегистрировались на турнир")
         );
   }
 }

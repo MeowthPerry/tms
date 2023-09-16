@@ -14,19 +14,19 @@ import ru.github.meperry.tms.api.dto.TournamentDtoList;
 @Component
 public class TournamentApi extends BaseApi {
 
-  public Mono<TournamentDto> create(String token, TournamentCreationRequest request) {
-    return request(HttpMethod.POST, "/api/tournament", token, request, TournamentDto.class);
+  public Mono<TournamentDto> create(String token, Mono<String> tokenSupplier, TournamentCreationRequest request) {
+    return request(HttpMethod.POST, "/api/tournament", token, tokenSupplier, request, TournamentDto.class);
   }
 
-  public Mono<ResponseEntity<Void>> registerToTournament(String token, Long tournamentId) {
-    return request(HttpMethod.PUT, String.format("/api/tournament/%d/register", tournamentId), token, null);
+  public Mono<ResponseEntity<Void>> registerToTournament(String token, Mono<String> tokenSupplier, Long tournamentId) {
+    return request(HttpMethod.PUT, String.format("/api/tournament/%d/register", tournamentId), token, tokenSupplier, null);
   }
 
-  public Mono<TournamentDto> startTournament(String token, Long tournamentId) {
-    return request(HttpMethod.PUT, String.format("/api/tournament/%d/start", tournamentId), token, null, TournamentDto.class);
+  public Mono<TournamentDto> startTournament(String token, Mono<String> tokenSupplier, Long tournamentId) {
+    return request(HttpMethod.PUT, String.format("/api/tournament/%d/start", tournamentId), token, tokenSupplier, null, TournamentDto.class);
   }
 
-  public Mono<TournamentDtoList> myTournaments(String token) {
-    return request(HttpMethod.GET, "/api/tournament/my_tournaments", token, null, TournamentDtoList.class);
+  public Mono<TournamentDtoList> myTournaments(String token, Mono<String> tokenSupplier) {
+    return request(HttpMethod.GET, "/api/tournament/my_tournaments", token, tokenSupplier, null, TournamentDtoList.class);
   }
 }

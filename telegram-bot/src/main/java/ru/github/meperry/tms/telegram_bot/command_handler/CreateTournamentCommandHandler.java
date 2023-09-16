@@ -120,9 +120,10 @@ public class CreateTournamentCommandHandler extends StatefulCommandHandler {
       case "ДА":
         User from = message.getFrom();
         tournamentApi
-            .create(authenticationService.getToken(from), creationRequest)
-            .subscribe(tournament -> botService.sendMessage(
-                new MessageExchange(message.getChatId(), "Турнир успешно создан, идентификатор - " + tournament.getTournamentId()
+            .create(authenticationService.getToken(from), tokenSupplier(from), creationRequest)
+            .subscribe(
+                tournament -> botService.sendMessage(
+                    new MessageExchange(message.getChatId(), "Турнир успешно создан, идентификатор - " + tournament.getTournamentId()
             )));
         break;
       case "НЕТ":

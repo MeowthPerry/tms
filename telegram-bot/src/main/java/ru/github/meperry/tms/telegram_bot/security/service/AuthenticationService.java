@@ -31,6 +31,12 @@ public class AuthenticationService {
     tokenRepository.save(new UserIdToken(userId, token));
   }
 
+  /**
+   * Возвращает токен для данного telegram-пользователя.
+   *
+   * @param user telegram-пользователь
+   * @return токен
+   */
   public String getToken(User user) {
     Optional<UserIdToken> userIdToken = tokenRepository.findById(user.getId());
 
@@ -41,6 +47,10 @@ public class AuthenticationService {
     return loginOrRegister(user).block();
   }
 
+  /**
+   * @param user telegram-пользователь
+   * @return токен
+   */
   public Mono<String> loginOrRegister(User user) {
     return authenticationApi.login(new LoginRequest(user.getUserName(), getPassword(user.getId())))
         .map(

@@ -39,7 +39,6 @@ public class JwtTokenFilter extends GenericFilterBean {
         }
       }
     } catch (JwtAuthenticationException e) {
-      log.error("Jwt exception", e);
       ((HttpServletResponse) res).setStatus(HttpStatus.FORBIDDEN.value());
     }
 
