@@ -8,8 +8,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Repository;
+import ru.github.meperry.tms.backend.event.MatchResultReportedEvent;
 import ru.github.meperry.tms.backend.model.Match;
+import ru.github.meperry.tms.backend.model.Stage;
 import ru.github.meperry.tms.backend.repository.MatchRepository;
 import ru.github.meperry.tms.backend.security.model.User;
 
@@ -21,6 +25,8 @@ import ru.github.meperry.tms.backend.security.model.User;
 public class MatchService {
 
   private final MatchRepository matchRepository;
+  private final ApplicationEventPublisher eventPublisher;
+  private final StageService stageService;
 
   private static final User DUMMY_USER = new User();
 
@@ -124,5 +130,59 @@ public class MatchService {
 
   public List<Match> saveAll(List<Match> matches) {
     return matchRepository.saveAll(matches);
+  }
+
+  /**
+   * Задать результат матча
+   *
+   * @param participantOne      первый участник
+   * @param participantOneScore счет первого участника
+   * @param participantTwo      второй участник
+   * @param participantTwoScore счет второго участника
+   */
+  public void report(User participantOne, Integer participantOneScore, User participantTwo,
+      Integer participantTwoScore) {
+    Match match = matchRepository.findByParticipantOneUserIdAndParticipantTwoUserId(
+            participantOne.getUserId(),
+            participantTwo.getUserId()
+        )
+        .orElseThrow(() -> new RuntimeException(
+            String.format("Match for participants (%s, %s) not found", participantOne.getUsername(),
+                participantTwo.getUsername()
+            )));
+
+    match.setParticipantOneScore(participantOneScore);
+    match.setParticipantTwoScore(participantTwoScore);
+
+    matchRepository.save(match);
+
+    eventPublisher.publishEvent(new MatchResultReportedEvent(match));
+  }
+
+  @EventListener(MatchResultReportedEvent.class)
+  public void matchResultReportedEventListener(MatchResultReportedEvent event) {
+    // в зависимости от типа стадии генерируем следующие матчи или стартуем следующий этап
+    Stage stage = event.match().getGroup().getStage();
+    switch (stage.getStageType()) {
+      case SINGLE_ELIMINATION:
+        break;
+      case ROUND_ROBIN:
+        // проверяем, что все матчи во всех группах имеют победителя
+        if (allMatchesHasWinner(stage)) {
+          // если да, то стартуем плей-офф
+          stageService.generateGroupsWithMatchesAndSave(
+            stage.getTournament().getStages().get(1),
+            stageService.getRoundRobinStageWinners(stage)
+          );
+        }
+        break;
+    }
+  }
+
+  private boolean allMatchesHasWinner(Stage stage) {
+    return stage.getGroups()
+        .stream()
+        .flatMap(group -> group.getMatches().stream())
+        .allMatch(Match::hasWinner);
   }
 }

@@ -3,6 +3,7 @@ package ru.github.meperry.tms.backend.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -76,5 +77,14 @@ public class StageService {
     }
 
     stage.setGroups(groups);
+  }
+
+  public List<User> getRoundRobinStageWinners(Stage stage) {
+    Integer passingCount = stage.getRoundRobinStageMetadata().getPassingCount();
+    return stage.getGroups()
+        .stream()
+        .flatMap(
+            group -> groupService.getSortedByScoreParticipants(group).stream().limit(passingCount))
+        .collect(Collectors.toList());
   }
 }

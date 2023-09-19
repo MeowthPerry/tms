@@ -57,4 +57,8 @@ public class Match extends BaseEntity {
            ? participantOne
            : participantTwo;
   }
+
+  public boolean hasWinner() {
+    return participantTwo == null || (participantOneScore != null && participantTwoScore != null);
+  }
 }
